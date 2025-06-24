@@ -2,12 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8" />
-<title>Dashboard Finanze — import XLSX</title>
-
-<!-- SheetJS per leggere Excel in locale -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"
-        integrity="sha512-kTtm84M6bBtDjvR/ko6/nYw+f37X1LpNJBDesJQ2+8t+J3E1Z+0LxKi4h4QDS4VvyOeLoDnSxJ0ONw7X3bHsfQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<title>Quaderno Finanze Personali</title>
 
 <style>
 :root{--line:28px;--line-cl:#cdd7ee;--paper:#fbfcff;--ink:#1e293b;
@@ -25,18 +20,14 @@ h2{margin:1.3rem 0 0.5rem;font-size:1.25rem;text-decoration:underline double}
 .card p{font-size:1.4rem;font-weight:700}
 .positive{color:var(--green)} .negative{color:var(--red)}
 table{width:100%;border-collapse:collapse;margin-bottom:2rem;background:#ffffffd0;border:1px solid #888;backdrop-filter:blur(2px)}
-thead{background:#343434;color:#fff}
-th,td{padding:0.55rem 0.6rem;text-align:center;font-size:0.9rem}
+thead{background:#343434;color:#fff}th,td{padding:0.55rem 0.6rem;text-align:center;font-size:0.9rem}
 tbody tr:nth-child(even){background:#f1f5f9dd}
 td.income{color:var(--green);font-weight:600}
 td.expense{color:var(--red);font-weight:600}
-td.balance{font-weight:700}
-.balance.positive{color:var(--green)}
-.balance.negative{color:var(--red)}
+td.balance{font-weight:700}.balance.positive{color:var(--green)}.balance.negative{color:var(--red)}
 .month-sep td{background:var(--lav);font-weight:700;text-align:left;font-size:1rem;padding-left:0.4rem}
 .badge{display:inline-block;padding:0.1rem 0.45rem;border-radius:4px;font-size:0.68rem;color:#fff;font-weight:700;text-transform:uppercase}
-.badge.income{background:var(--green)}
-.badge.expense{background:var(--red)}
+.badge.income{background:var(--green)}.badge.expense{background:var(--red)}
 form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.5rem;margin-bottom:2rem}
 input,select,button{padding:0.35rem;border:1px solid #888;border-radius:4px;background:#fff7;font-family:inherit}
 button{cursor:pointer;font-weight:700;background:var(--lav)}
@@ -46,21 +37,14 @@ button{cursor:pointer;font-weight:700;background:var(--lav)}
 <h1>Prospetto Entrate &amp; Uscite</h1>
 <div class="container">
 
-  <!-- CARD riepilogo -->
+  <!-- Card riepilogo -->
   <section id="cards" class="cards"></section>
 
-  <!-- Import XLSX -->
-  <h2>Importa estratto XLSX</h2>
-  <form id="xlsx-form">
-    <input type="file" id="xlsx-file" accept=".xlsx" />
-    <button>Importa file</button>
-  </form>
-
-  <!-- Riepilogo mensile -->
+  <!-- Riepilogo Mensile -->
   <h2>Riepilogo Mensile</h2>
   <table id="monthly"><thead><tr><th>Mese</th><th>Entrate</th><th>Uscite</th><th>Saldo</th></tr></thead><tbody></tbody></table>
 
-  <!-- Dettaglio fisse / manuali -->
+  <!-- Dettaglio transazioni fisse / manuali -->
   <h2>Transazioni fisse / manuali</h2>
   <table id="detail"><thead><tr><th>Data</th><th>Categoria</th><th>Tipo</th><th>Importo</th><th>Saldo</th></tr></thead><tbody></tbody></table>
 
@@ -76,13 +60,13 @@ button{cursor:pointer;font-weight:700;background:var(--lav)}
 </div>
 
 <script>
-/* ---------------- UTIL ---------------- */
+/* --------- UTIL --------- */
 const START_BALANCE = 6100;
 const fmt = v => `€ ${Math.round(v).toLocaleString('it-IT')}`;
 const monthKey = d => d.slice(0,7);
 const lastDay  = (y,m)=>new Date(y,m+1,0).getDate();
 
-/* ---------------- GENERA FISSE (lug 2025 → dic 2026) ---------------- */
+/* --------- GENERA FISSE --------- */
 const subs=[['Netflix',19,26,'2025-06'],['Will',7,28,'2025-06'],['ChatGPT',23,22,'2025-06'],
   ['NowTV',5,19,'2025-07'],['Spotify',15,20,'2025-07'],['Prime Video AD',2,16,'2025-07'],
   ['Prime',5,16,'2025-07'],['iCloud',10,23,'2025-07'],['YouTube+',9,11,'2025-07']];
@@ -96,80 +80,74 @@ const loan=['2025-07-01','2025-08-01','2025-09-01','2025-10-01']
 let tx=[];
 const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
 
-/* crea tutte le ricorrenze */
 (function generateFixed(){
   oneOff.forEach(o=>push(...o));
   loan.forEach(o=>push(...o));
   let cur=new Date(2025,5,24), end=new Date(2026,11,31);
   while(cur<=end){
     const y=cur.getFullYear(),m=cur.getMonth(),iso=`${y}-${String(m+1).padStart(2,'0')}`;
-    if(cur>=new Date('2025-07-01')){push(`${iso}-01`,'Stipendio','Entrata',1650);push(`${iso}-01`,'Ticket Edenred','Entrata',160);}
+    if(cur>=new Date('2025-07-01')){
+      push(`${iso}-01`,'Stipendio','Entrata',1650);
+      push(`${iso}-01`,'Ticket Edenred','Entrata',160);
+    }
     push(`${iso}-${lastDay(y,m)}`,'Affitto','Spesa',680);
     if(iso!=='2025-08') push(`${iso}-${lastDay(y,m)}`,'ATM','Spesa',39);
     [5,12,19,26].forEach(d=>d<=lastDay(y,m)&&push(`${iso}-${String(d).padStart(2,'0')}`,'Tabacco','Spesa',20));
     subs.forEach(([cat,amt,day,from])=>{
-      if(iso>=from){const d=Math.min(day,lastDay(y,m));push(`${iso}-${String(d).padStart(2,'0')}`,cat,'Spesa',amt);}
+      if(iso>=from){
+        const d=Math.min(day,lastDay(y,m));
+        push(`${iso}-${String(d).padStart(2,'0')}`,cat,'Spesa',amt);
+      }
     });
     cur.setMonth(m+1);
   }
 })();
 
-/* ---------------- STATO EXTRA XLSX ---------------- */
-let extraMonthly={}  // { 'aaaa-mm': {in,out} }
-
-/* ---------------- CALCOLO & RENDER ---------------- */
+/* --------- CALCOLO & RENDER --------- */
 function render(){
-  const C=document.getElementById('cards'), M=document.querySelector('#monthly tbody'),
+  const C=document.getElementById('cards'),
+        M=document.querySelector('#monthly tbody'),
         D=document.querySelector('#detail tbody');
   C.innerHTML=''; M.innerHTML=''; D.innerHTML='';
 
-  const base=[...tx].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const sorted=[...tx].sort((a,b)=>new Date(a.date)-new Date(b.date));
   let bal=START_BALANCE, monthly={};
-  base.forEach(t=>{
+  sorted.forEach(t=>{
     bal += t.type==='Entrata'?t.amount:-t.amount;
-    t.balance=bal;
+    t.balance = bal;
     const k=monthKey(t.date);
     monthly[k]??={in:0,out:0,s:0};
-    t.type==='Entrata'?monthly[k].in+=t.amount:monthly[k].out+=t.amount;
-    monthly[k].s=bal;
-  });
-
-  for(const m in extraMonthly){
-    monthly[m]??={in:0,out:0,s:0};
-    monthly[m].in  += extraMonthly[m].in;
-    monthly[m].out += extraMonthly[m].out;
-  }
-
-  let run=START_BALANCE;
-  Object.keys(monthly).sort().forEach(m=>{
-    run += (extraMonthly[m]?.in||0)-(extraMonthly[m]?.out||0);
-    monthly[m].s=run;
+    t.type==='Entrata'?monthly[k].in += t.amount : monthly[k].out += t.amount;
+    monthly[k].s = bal;
   });
 
   const totIn = Object.values(monthly).reduce((s,m)=>s+m.in,0),
         totOut= Object.values(monthly).reduce((s,m)=>s+m.out,0),
         avgOut = Math.round(totOut/Object.keys(monthly).length);
-
   [['Saldo iniziale',START_BALANCE,''],
    ['Entrate totali',totIn,'positive'],
    ['Uscite totali',totOut,'negative'],
    ['Spesa media mese',avgOut,'negative'],
-   ['Saldo attuale',run,run>=0?'positive':'negative']]
+   ['Saldo attuale',bal,bal>=0?'positive':'negative']]
   .forEach(([l,v,cls])=>{
-      C.insertAdjacentHTML('beforeend',`<div class="card"><h2>${l}</h2><p class="${cls}">${fmt(v)}</p></div>`);
+     C.insertAdjacentHTML('beforeend',
+       `<div class="card"><h2>${l}</h2><p class="${cls}">${fmt(v)}</p></div>`);
   });
 
   Object.keys(monthly).sort().forEach(m=>{
     const {in:inn,out,s}=monthly[m];
     M.insertAdjacentHTML('beforeend',
-      `<tr><td>${m}</td><td class="income">${fmt(inn)}</td><td class="expense">${fmt(out)}</td><td class="balance ${s>=0?'positive':'negative'}">${fmt(s)}</td></tr>`)
+      `<tr><td>${m}</td><td class="income">${fmt(inn)}</td><td class="expense">${fmt(out)}</td><td class="balance ${s>=0?'positive':'negative'}">${fmt(s)}</td></tr>`);
   });
 
-  let cur=''; base.forEach(t=>{
+  let cur='';
+  sorted.forEach(t=>{
     const mk=monthKey(t.date);
-    if(mk!==cur){cur=mk;
+    if(mk!==cur){
+      cur=mk;
       const label=new Date(`${mk}-01`).toLocaleDateString('it-IT',{month:'long',year:'numeric'});
-      D.insertAdjacentHTML('beforeend',`<tr class="month-sep"><td colspan="5">${label.charAt(0).toUpperCase()+label.slice(1)}</td></tr>`);
+      D.insertAdjacentHTML('beforeend',
+        `<tr class="month-sep"><td colspan="5">${label.charAt(0).toUpperCase()+label.slice(1)}</td></tr>`);
     }
     D.insertAdjacentHTML('beforeend',
       `<tr><td>${t.date}</td><td>${t.category}</td><td><span class="badge ${t.type==='Entrata'?'income':'expense'}">${t.type}</span></td><td class="${t.type==='Entrata'?'income':'expense'}">${fmt(t.amount)}</td><td class="balance ${t.balance>=0?'positive':'negative'}">${fmt(t.balance)}</td></tr>`);
@@ -177,64 +155,7 @@ function render(){
 }
 render();
 
-/* ---------------- IMPORT XLSX ---------------- */
-document.getElementById('xlsx-form').addEventListener('submit',e=>{
-  e.preventDefault();
-  const f=document.getElementById('xlsx-file').files[0];
-  if(!f){alert('Seleziona un file');return;}
-
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const wb=XLSX.read(ev.target.result,{type:'array'}),
-          ws=wb.Sheets[wb.SheetNames[0]],
-          rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-
-    // trova colonne data + importo nella prima riga "sensata"
-    let dCol=-1, aCol=-1;
-    for(const row of rows){
-      row.forEach((cell,i)=>{
-        if(dCol===-1 && (typeof cell==='number' && XLSX.SSF.is_date(XLSX.SSF.parse_date_code(cell)) ||
-            /^\\d{1,2}[\\/.:-]\\d{1,2}[\\/.:-]\\d{2,4}$/.test(cell.toString().trim())))
-          dCol=i;
-        if(aCol===-1 && /[-+]?\\d+[.,]\\d+/.test(cell))
-          aCol=i;
-      });
-      if(dCol!==-1 && aCol!==-1) break;
-    }
-    if(dCol===-1||aCol===-1){alert('Non trovo colonne data/importo');return;}
-
-    extraMonthly={};
-
-    rows.forEach((row,idx)=>{
-      if(idx===0) return;
-      const rawD=row[dCol], rawA=row[aCol];
-      if(rawD===''||rawA==='') return;
-
-      // data
-      let iso;
-      if(typeof rawD==='number') iso=XLSX.SSF.format('yyyy-mm-dd',rawD);
-      else{
-        const p=rawD.toString().trim().replace(/[.]/g,'/').split(/[\\/-]/);
-        if(p.length<3) return;
-        const [d,m,y]=p;
-        iso=`${y.length===2?'20'+y:y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-      }
-
-      // importo
-      const amt=parseFloat(rawA.toString().replace(/[ €]/g,'').replace(/\./g,'').replace(',','.'));
-      if(isNaN(amt)) return;
-      const mk=monthKey(iso);
-      extraMonthly[mk]??={in:0,out:0};
-      amt>=0? extraMonthly[mk].in+=amt : extraMonthly[mk].out+=-amt;
-    });
-    render();
-    alert('Import riuscito!');
-    e.target.reset();
-  };
-  reader.readAsArrayBuffer(f);
-});
-
-/* ---------------- Form manuale ---------------- */
+/* --------- Inserisci manuale --------- */
 document.getElementById('manual').addEventListener('submit',e=>{
   e.preventDefault();
   const d=document.getElementById('m-date').value,
@@ -242,7 +163,8 @@ document.getElementById('manual').addEventListener('submit',e=>{
         t=document.getElementById('m-type').value,
         a=parseFloat(document.getElementById('m-amt').value);
   tx.push({date:d,category:c,type:t,amount:a});
-  render(); e.target.reset();
+  render();
+  e.target.reset();
 });
 </script>
 </body>
