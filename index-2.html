@@ -32,18 +32,27 @@ button{cursor:pointer;font-weight:700;background:#d0d7e6}
 <body>
 <h1>Prospetto Entrate &amp; Uscite</h1>
 <div class="container">
+
+  <!-- CARD riepilogo -->
   <section id="cards" class="cards"></section>
 
+  <!-- Import CSV -->
+  <h2>Importa estratto CSV</h2>
+  <input type="file" id="csv-file" accept=".csv">
+
+  <!-- Riepilogo mensile -->
   <h2>Riepilogo Mensile</h2>
   <div class="table-wrap">
     <table id="monthly"><thead><tr><th>Mese</th><th>Entrate</th><th>Uscite</th><th>Saldo</th></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Dettaglio -->
   <h2>Dettaglio</h2>
   <div class="table-wrap">
     <table id="detail"><thead><tr><th>Data</th><th>Categoria</th><th>Tipo</th><th>Importo</th><th>Saldo</th></tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- Aggiungi manuale -->
   <h2>Aggiungi transazione</h2>
   <form id="add-form">
     <input type="date"   id="f-date" required>
@@ -57,55 +66,51 @@ button{cursor:pointer;font-weight:700;background:#d0d7e6}
 <script>
 /* ---------- util ---------- */
 const START = 6100,
-      fmt = v => `€ ${Math.round(v).toLocaleString('it-IT')}`,
-      mk  = d => d.slice(0,7),
-      lastDay = (y,m)=>new Date(y,m+1,0).getDate();
+      fmt  = v=>`€ ${Math.round(v).toLocaleString('it-IT')}`,
+      mk   = d=>d.slice(0,7),
+      last = (y,m)=>new Date(y,m+1,0).getDate();
 
-/* ---------- dataset fisso ---------- */
+/* ---------- categorie abbonamenti ---------- */
 const subs = ["Netflix","Will","ChatGPT","NowTV","Spotify","Prime Video AD","Prime","iCloud","YouTube+"],
       subsSet = new Set(subs);
 
-const subsData = [
-  ["Netflix",19,26,"2025-06"],["Will",7,28,"2025-06"],["ChatGPT",23,22,"2025-06"],
-  ["NowTV",5,19,"2025-07"],["Spotify",15,20,"2025-07"],["Prime Video AD",2,16,"2025-07"],
-  ["Prime",5,16,"2025-07"],["iCloud",10,23,"2025-07"],["YouTube+",9,11,"2025-07"]
-];
+/* ---------- transazioni iniziali ---------- */
+let tx=[]; const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
 
-const oneOff = [
- ["2025-06-27","Aereo Sicilia",53,"Spesa"],["2025-07-12","Beat Canzone",35,"Spesa"],
+/* — one-off */
+[["2025-06-27","Aereo Sicilia",53,"Spesa"],["2025-07-12","Beat Canzone",35,"Spesa"],
  ["2025-07-16","Mix Canzone",27,"Spesa"],["2025-07-27","Aereo Sicilia",53,"Spesa"],
  ["2025-08-10","Rimborso 730",400,"Entrata"],["2025-08-12","Beat Canzone",35,"Spesa"],
- ["2025-08-16","Mix Canzone",27,"Spesa"],["2025-07-15","Tredicesima",1300,"Entrata"]
-];
+ ["2025-08-16","Mix Canzone",27,"Spesa"],["2025-07-15","Tredicesima",1300,"Entrata"]]
+.forEach(o=>push(...o));
 
-const loan = ["2025-07-01","2025-08-01","2025-09-01","2025-10-01"].map(d=>[d,"Finanziamento",39,"Spesa"]);
+/* — finanziamento */
+["2025-07-01","2025-08-01","2025-09-01","2025-10-01"].forEach(d=>push(d,"Finanziamento","Spesa",39));
 
-/* ---------- costruisci transazioni ---------- */
-let tx=[];
-const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
+/* — ricorrenze mensili (lug 2025 → dic 2026) */
+const subsData=[["Netflix",19,26,"2025-06"],["Will",7,28,"2025-06"],["ChatGPT",23,22,"2025-06"],
+["NowTV",5,19,"2025-07"],["Spotify",15,20,"2025-07"],["Prime Video AD",2,16,"2025-07"],
+["Prime",5,16,"2025-07"],["iCloud",10,23,"2025-07"],["YouTube+",9,11,"2025-07"]];
 
-(function buildFixed(){
-  oneOff.forEach(o=>push(...o));
-  loan.forEach(o=>push(...o));
-  for(let cur=new Date(2025,5,24); cur<=new Date(2026,11,31); cur.setMonth(cur.getMonth()+1)){
-    const y=cur.getFullYear(),m=cur.getMonth(),iso=`${y}-${String(m+1).padStart(2,'0')}`;
-    if(cur>=new Date("2025-07-01")){
-      push(`${iso}-01`,"Stipendio","Entrata",1650);
-      push(`${iso}-01`,"Ticket Edenred","Entrata",160);
-    }
-    push(`${iso}-${lastDay(y,m)}`,"Affitto","Spesa",680);
-    if(iso!=="2025-08") push(`${iso}-${lastDay(y,m)}`,"ATM","Spesa",39);
-    [5,12,19,26].forEach(d=>{
-      if(d<=lastDay(y,m)) push(`${iso}-${String(d).padStart(2,'0')}`,"Tabacco","Spesa",20);
-    });
-    subsData.forEach(([cat,amt,day,from])=>{
-      if(iso>=from){
-        const dd=Math.min(day,lastDay(y,m));
-        push(`${iso}-${String(dd).padStart(2,'0')}`,cat,"Spesa",amt);
-      }
-    });
+for(let cur=new Date(2025,5,24); cur<=new Date(2026,11,31); cur.setMonth(cur.getMonth()+1)){
+  const y=cur.getFullYear(), m=cur.getMonth(), iso=`${y}-${String(m+1).padStart(2,'0')}`;
+
+  if(cur>=new Date("2025-07-01")){
+    push(`${iso}-01`,"Stipendio","Entrata",1650);
+    push(`${iso}-01`,"Ticket Edenred","Entrata",160);
   }
-})();
+  push(`${iso}-${last(y,m)}`,"Affitto","Spesa",680);
+  if(iso!=="2025-08") push(`${iso}-${last(y,m)}`,"ATM","Spesa",39);
+  [5,12,19,26].forEach(d=>{
+    if(d<=last(y,m)) push(`${iso}-${String(d).padStart(2,'0')}`,"Tabacco","Spesa",20);
+  });
+  subsData.forEach(([cat,amt,day,from])=>{
+    if(iso>=from){
+      const dd=Math.min(day,last(y,m));
+      push(`${iso}-${String(dd).padStart(2,'0')}`,cat,"Spesa",amt);
+    }
+  });
+}
 
 /* ---------- render ---------- */
 function render(){
@@ -115,34 +120,33 @@ function render(){
   cards.innerHTML=mBody.innerHTML=dBody.innerHTML="";
 
   const sorted=[...tx].sort((a,b)=>new Date(a.date)-new Date(b.date)),
-        months={}, first=mk(sorted[0].date),
-        lastM = mk(sorted[sorted.length-1].date);
+        months={}, first=mk(sorted[0].date), lastM=mk(sorted[sorted.length-1].date);
 
+  /* crea mappa mesi pre-popolata */
   for(let d=new Date(first+"-01"); d<=new Date(lastM+"-01"); d.setMonth(d.getMonth()+1))
     months[mk(d.toISOString().slice(0,10))]={in:0,out:0,s:0};
 
   let bal=START;
   sorted.forEach(t=>{
     bal += t.type==="Entrata"?t.amount:-t.amount;
-    t.balance = bal;
-    const key=mk(t.date);
-    if(!months[key]) months[key]={in:0,out:0,s:0};          // salvagente
-    if(t.type==="Entrata") months[key].in+=t.amount;
-    else                   months[key].out+=t.amount;
-    months[key].s = bal;
+    t.balance=bal;
+    const m=mk(t.date);
+    if(t.type==="Entrata") months[m].in  += t.amount;
+    else                   months[m].out += t.amount;
+    months[m].s = bal;
   });
 
   const keys=Object.keys(months),
-        totIn = keys.reduce((s,k)=>s+(months[k]?.in  ||0),0),
-        totOut= keys.reduce((s,k)=>s+(months[k]?.out ||0),0),
-        avgOut= keys.length? Math.round(totOut/keys.length):0;
+        totIn = keys.reduce((s,k)=>s+months[k].in ,0),
+        totOut= keys.reduce((s,k)=>s+months[k].out,0),
+        avgOut= Math.round(totOut/keys.length);
 
   [["Saldo iniziale",START],
-   ["Entrate totali",totIn,"positive"],
-   ["Uscite totali", totOut,"negative"],
+   ["Entrate totali", totIn,"positive"],
+   ["Uscite totali",  totOut,"negative"],
    ["Spesa media mese",avgOut,"negative"],
-   ["Saldo attuale",bal,bal>=0?"positive":"negative"]
-  ].forEach(([l,v,cls])=>{
+   ["Saldo attuale",bal,bal>=0?"positive":"negative"]]
+  .forEach(([l,v,cls])=>{
     cards.insertAdjacentHTML("beforeend",
       `<div class="card"><h3>${l}</h3><p class="${cls||''}">${fmt(v)}</p></div>`);
   });
@@ -158,9 +162,9 @@ function render(){
     const m=mk(t.date);
     if(m!==cur){
       cur=m; headerShown[m]=false;
-      const label=new Date(m+"-01").toLocaleDateString("it-IT",{month:"long",year:"numeric"});
+      const lab=new Date(m+"-01").toLocaleDateString("it-IT",{month:"long",year:"numeric"});
       dBody.insertAdjacentHTML("beforeend",
-        `<tr class="month-sep"><td colspan="5">${label.charAt(0).toUpperCase()+label.slice(1)}</td></tr>`);
+        `<tr class="month-sep"><td colspan="5">${lab.charAt(0).toUpperCase()+lab.slice(1)}</td></tr>`);
     }
     if(subsSet.has(t.category)){
       if(!headerShown[m]){
@@ -179,27 +183,57 @@ function render(){
 }
 render();
 
-/* toggle abbonamenti */
+/* ---------- toggle abbonamenti ---------- */
 document.querySelector("#detail").addEventListener("click",e=>{
   const row=e.target.closest(".sub-toggle");
   if(!row) return;
   const m=row.dataset.m, rows=document.querySelectorAll(`.sub-${m}`),
-        hidden=[...rows][0].classList.contains("hidden");
-  rows.forEach(r=>r.classList.toggle("hidden",!hidden));
-  row.firstChild.textContent = hidden? "▼ Abbonamenti":"► Abbonamenti";
+        hide=[...rows][0].classList.contains("hidden");
+  rows.forEach(r=>r.classList.toggle("hidden",!hide));
+  row.firstChild.textContent = hide?"▼ Abbonamenti":"► Abbonamenti";
 });
 
-/* aggiungi transazione manuale */
+/* ---------- aggiunta manuale ---------- */
 document.getElementById("add-form").addEventListener("submit",e=>{
   e.preventDefault();
   const d=document.getElementById("f-date").value,
         c=document.getElementById("f-cat").value.trim(),
         t=document.getElementById("f-type").value,
         a=parseFloat(document.getElementById("f-amt").value);
-  if(!d||!c||isNaN(a)) return;
-  tx.push({date:d,category:c,type:t,amount:a});
-  render();
-  e.target.reset();
+  if(d && c && !isNaN(a)){
+    tx.push({date:d,category:c,type:t,amount:a});
+    render();
+    e.target.reset();
+  }
+});
+
+/* ---------- import CSV ---------- */
+document.getElementById("csv-file").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=evt=>{
+    const lines=evt.target.result.split(/\\r?\\n/);
+    if(lines.length<2) return alert("CSV vuoto");
+    const headers=lines[0].split(/;|,/).map(h=>h.trim().toLowerCase()),
+          colDate=headers.findIndex(h=>h.includes("data")),
+          colAmt =headers.findIndex(h=>h.includes("importo")||h.includes("amount"));
+    if(colDate<0||colAmt<0) return alert("Colonne Data/Importo non trovate");
+    for(let i=1;i<lines.length;i++){
+      if(!lines[i].trim()) continue;
+      const parts=lines[i].split(/;|,/);
+      const rawD=parts[colDate], rawA=parts[colAmt];
+      if(!rawD||!rawA) continue;
+      const [d,m,y]=rawD.trim().split(/[\\/-]/);
+      const iso=`${y.length===2?'20'+y:y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+      const amt=parseFloat(rawA.replace(/[ €]/g,'').replace(/\./g,'').replace(',','.'));
+      if(isNaN(amt)) continue;
+      tx.push({date:iso,category:"Banca CSV",type:amt>=0?"Entrata":"Spesa",amount:Math.abs(amt)});
+    }
+    render();
+    e.target.value="";
+  };
+  reader.readAsText(file);
 });
 </script>
 </body>
