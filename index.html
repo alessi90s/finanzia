@@ -2,427 +2,189 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Quaderno Finanze Personali</title>
+  <title>Quaderno Finanze - Import CSV</title>
+
+  <!-- PapaParse (CDN) per leggere CSV lato browser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"
+          integrity="sha512-jN4W0iv29oE6kp0YU4wUhL8T6d5Fz7d6DNj0O2oIbgVtzINsRmy1nPImRWyUZ+ht5/8BFH1lka60RKkTncYzvw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
   <style>
-    :root {
-      --line-h: 28px;
-      --line-color: #cdd7ee;
-      --paper-bg: #fbfcff;
-      --ink: #1e293b;
-      --green: #15803d;
-      --red: #b91c1c;
-      --lav: #d0d7e6;
-    }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "Courier New", monospace;
-    }
-    body {
-      padding: 2rem 1rem;
-      background: repeating-linear-gradient(
-        var(--paper-bg) 0 var(--line-h),
-        var(--line-color) var(--line-h) calc(var(--line-h) + 1px)
-      );
-      color: var(--ink);
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 2rem;
-      font-size: 2.2rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    /* BADGES */
-    .badge {
-      display: inline-block;
-      padding: 0.1rem 0.45rem;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #fff;
-    }
-    .badge.income {
-      background: var(--green);
-    }
-    .badge.expense {
-      background: var(--red);
-    }
-
-    /* CARDS */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .card {
-      background: #ffffffe0;
-      border: 1px solid #888;
-      backdrop-filter: blur(2px);
-      padding: 1rem;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-    }
-    .card h2 {
-      font-size: 0.85rem;
-      margin-bottom: 0.15rem;
-    }
-    .card p {
-      font-size: 1.4rem;
-      font-weight: 700;
-    }
-    .positive {
-      color: var(--green);
-    }
-    .negative {
-      color: var(--red);
-    }
-
-    /* TABLES */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 2.5rem;
-      background: #ffffffd0;
-      border: 1px solid #888;
-      backdrop-filter: blur(2px);
-    }
-    thead {
-      background: #343434;
-      color: #fff;
-    }
-    th,
-    td {
-      padding: 0.55rem 0.6rem;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-    tbody tr:nth-child(even) {
-      background: #f1f5f9dd;
-    }
-    td.income::before {
-      content: "+ ";
-      font-weight: 700;
-      color: var(--green);
-    }
-    td.expense::before {
-      content: "- ";
-      font-weight: 700;
-      color: var(--red);
-    }
-    td.income {
-      color: var(--green);
-      font-weight: 600;
-    }
-    td.expense {
-      color: var(--red);
-      font-weight: 600;
-    }
-    td.balance {
-      font-weight: 700;
-    }
-    td.balance.positive {
-      color: var(--green);
-    }
-    td.balance.negative {
-      color: var(--red);
-    }
-    h2 {
-      margin: 1.4rem 0 0.5rem;
-      font-size: 1.25rem;
-      text-decoration: underline double;
-    }
-    .month-sep td {
-      background: var(--lav);
-      font-weight: 700;
-      text-align: left;
-      font-size: 1rem;
-      padding-left: 0.4rem;
-    }
-
-    /* FORM INPUT */
-    #add-form {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-    }
-    #add-form input,
-    #add-form select {
-      padding: 0.35rem;
-      border: 1px solid #888;
-      border-radius: 4px;
-      background: #fff7;
-    }
-    #add-btn {
-      cursor: pointer;
-      font-weight: 700;
-      background: var(--lav);
-    }
+    :root{--line:28px;--line-cl:#cdd7ee;--paper:#fbfcff;--ink:#1e293b;
+          --green:#15803d;--red:#b91c1c;--lav:#d0d7e6;}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:"Courier New",monospace}
+    body{padding:2rem 1rem;background:repeating-linear-gradient(var(--paper)0 var(--line),
+         var(--line-cl)var(--line)calc(var(--line)+1px));color:var(--ink)}
+    h1{text-align:center;margin-bottom:2rem;font-size:2.2rem;text-transform:uppercase;letter-spacing:1px}
+    h2{margin:1.2rem 0 0.5rem;font-size:1.25rem;text-decoration:underline double}
+    .container{max-width:1200px;margin:0 auto}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:2rem}
+    .card{background:#ffffffe0;border:1px solid #888;backdrop-filter:blur(2px);
+          padding:1rem;border-radius:10px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.08)}
+    .card h2{font-size:0.9rem;margin-bottom:0.15rem}
+    .card p{font-size:1.4rem;font-weight:700}
+    .positive{color:var(--green)} .negative{color:var(--red)}
+    .badge{display:inline-block;padding:0.1rem 0.45rem;border-radius:4px;font-size:0.68rem;
+           font-weight:700;text-transform:uppercase;color:#fff}
+    .income{color:var(--green)} .expense{color:var(--red)}
+    .badge.income{background:var(--green)} .badge.expense{background:var(--red)}
+    table{width:100%;border-collapse:collapse;margin-bottom:2rem;background:#ffffffd0;
+          border:1px solid #888;backdrop-filter:blur(2px)}
+    thead{background:#343434;color:#fff} th,td{padding:0.55rem 0.6rem;text-align:center;font-size:0.9rem}
+    tbody tr:nth-child(even){background:#f1f5f9dd}
+    td.income::before{content:'+ ';font-weight:700;color:var(--green)}
+    td.expense::before{content:'- ';font-weight:700;color:var(--red)}
+    td.balance{font-weight:700} td.balance.positive{color:var(--green)} td.balance.negative{color:var(--red)}
+    .month-sep td{background:var(--lav);font-weight:700;text-align:left;font-size:1rem;padding-left:0.4rem}
+    #add-form,#csv-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.5rem;margin-bottom:2rem}
+    input,select{padding:0.35rem;border:1px solid #888;border-radius:4px;background:#fff7}
+    button{cursor:pointer;font-weight:700;background:var(--lav)}
   </style>
 </head>
 <body>
   <h1>Prospetto Entrate &amp; Uscite</h1>
   <div class="container">
-    <!-- CARDS -->
+
+    <!-- CARD riepilogo -->
     <section id="summary-cards" class="cards"></section>
 
-    <!-- FORM -->
-    <h2>Aggiungi transazione</h2>
-    <form id="add-form">
-      <input type="date" id="f-date" required />
-      <input type="text" id="f-cat" placeholder="Categoria" required />
-      <select id="f-type">
-        <option value="Entrata">Entrata</option>
-        <option value="Spesa">Spesa</option>
+    <!-- Import CSV -->
+    <h2>Importa estratto CSV</h2>
+    <form id="csv-form">
+      <input type="file" id="csv-file" accept=".csv" />
+      <select id="csv-signer">
+        <option value="-">Segno (negativo = spesa)</option>
+        <option value="reverse">Valori già firmati (es. -34,56)</option>
       </select>
-      <input
-        type="number"
-        id="f-amt"
-        placeholder="Importo €"
-        step="1"
-        required
-      />
-      <button type="submit" id="add-btn">Aggiungi</button>
+      <button type="submit">Importa</button>
     </form>
 
-    <!-- RIEPILOGO MENSILE -->
-    <h2>Riepilogo Mensile</h2>
-    <table id="monthly-table">
-      <thead>
-        <tr>
-          <th>Mese</th>
-          <th>Entrate</th>
-          <th>Uscite</th>
-          <th>Saldo Finale</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <!-- Add manuale -->
+    <h2>Aggiungi transazione manuale</h2>
+    <form id="add-form">
+      <input type="date"   id="f-date" required />
+      <input type="text"   id="f-cat"  placeholder="Categoria" required />
+      <select id="f-type"><option>Entrata</option><option>Spesa</option></select>
+      <input type="number" id="f-amt"  placeholder="Importo €" step="1" required />
+      <button type="submit">Aggiungi</button>
+    </form>
 
-    <!-- DETTAGLIO TRANSAZIONI -->
+    <!-- Riepilogo mensile -->
+    <h2>Riepilogo Mensile</h2>
+    <table id="monthly-table"><thead><tr><th>Mese</th><th>Entrate</th><th>Uscite</th><th>Saldo</th></tr></thead><tbody></tbody></table>
+
+    <!-- Dettaglio transazioni -->
     <h2>Dettaglio Transazioni</h2>
-    <table id="transactions-table">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Categoria</th>
-          <th>Tipo</th>
-          <th>Importo</th>
-          <th>Saldo</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <table id="transactions-table"><thead><tr><th>Data</th><th>Categoria</th><th>Tipo</th><th>Importo</th><th>Saldo</th></tr></thead><tbody></tbody></table>
   </div>
 
-  <script>
-    /************* CONFIG BASE *************/
-    const START_BALANCE = 6100; // saldo iniziale (24-06-2025)
-    const START_DATE = new Date("2025-06-24");
-    const END_DATE = new Date("2026-12-31");
-    const lastDay = (y, m) => new Date(y, m + 1, 0).getDate();
+<script>
+/* ---------- CONFIG BASE ---------- */
+const START_BALANCE = 6100;
+const START_DATE    = new Date('2025-06-24');
+const END_DATE      = new Date('2026-12-31');
+const lastDay=(y,m)=>new Date(y,m+1,0).getDate();
 
-    /*  Abbonamenti mensili  */
-    const SUBS = [
-      ["Netflix", 19, 26, "2025-06"],
-      ["Will", 7, 28, "2025-06"],
-      ["ChatGPT", 23, 22, "2025-06"],
-      ["NowTV", 5, 19, "2025-07"],
-      ["Spotify", 15, 20, "2025-07"],
-      ["Prime Video AD", 2, 16, "2025-07"],
-      ["Prime", 5, 16, "2025-07"],
-      ["iCloud", 10, 23, "2025-07"],
-      ["YouTube+", 9, 11, "2025-07"],
-    ];
+/* ---------- Dataset statico (abbrev.) ---------- */
+const SUBS=[['Netflix',19,26,'2025-06'],['Will',7,28,'2025-06'],['ChatGPT',23,22,'2025-06']];
+const ONE_OFF=[['2025-06-27','Aereo',53,'Spesa']];
+const LOAN   =['2025-07-01'].map(d=>[d,'Finanziamento',39,'Spesa']);
 
-    /*  Una-tantum e rate  */
-    const ONE_OFF = [
-      ["2025-06-27", "Aereo Sicilia", 53, "Spesa"],
-      ["2025-07-12", "Beat Canzone", 35, "Spesa"],
-      ["2025-07-16", "Mix Canzone", 27, "Spesa"],
-      ["2025-07-27", "Aereo Sicilia", 53, "Spesa"],
-      ["2025-08-10", "Rimborso 730", 400, "Entrata"],
-      ["2025-08-12", "Beat Canzone", 35, "Spesa"],
-      ["2025-08-16", "Mix Canzone", 27, "Spesa"],
-      ["2025-07-15", "Tredicesima", 1300, "Entrata"],
-    ];
-    const LOAN = ["2025-07-01", "2025-08-01", "2025-09-01", "2025-10-01"].map(
-      (d) => [d, "Finanziamento", 39, "Spesa"]
-    );
+/* ---------- Array transazioni ---------- */
+let tx=[];
+const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
 
-    /************* GENERA TRANS. *************/
-    let tx = [];
-    const push = (d, c, t, a) => tx.push({ date: d, category: c, type: t, amount: a });
-    [...ONE_OFF, ...LOAN].forEach(([d, c, a, t]) => push(d, c, t, a));
+[...ONE_OFF,...LOAN].forEach(([d,c,a,t])=>push(d,c,t,a));
 
-    // Genera le transazioni dinamiche (stipendio, affitto, abbonamenti, tabacco...)
-    let cur = new Date(START_DATE.getFullYear(), START_DATE.getMonth(), 1);
-    while (cur <= END_DATE) {
-      const y = cur.getFullYear(),
-        m = cur.getMonth(),
-        iso = `${y}-${String(m + 1).padStart(2, "0")}`;
+/* Genera dinamiche (affitto, ecc.) solo per DEMO ridotte */
+push('2025-07-01','Stipendio','Entrata',1650);
+push('2025-07-31','Affitto','Spesa',680);
 
-      // Entrate fisse dal luglio 2025
-      if (cur >= new Date("2025-07-01")) {
-        push(`${iso}-01`, "Stipendio", "Entrata", 1650);
-        push(`${iso}-01`, "Ticket Edenred", "Entrata", 160);
-      }
+/* ---------- UTIL ---------- */
+const fmt=v=>`€ ${Math.round(v).toLocaleString('it-IT')}`;
+let monthly={},running;
 
-      // Affitto e ATM
-      push(`${iso}-${lastDay(y, m)}`, "Affitto", "Spesa", 680);
-      if (iso !== "2025-08")
-        push(`${iso}-${lastDay(y, m)}`, "ATM", "Spesa", 39);
+const calc=()=>{
+  tx.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  running=START_BALANCE; monthly={};
+  tx.forEach(t=>{
+    running += t.type==='Entrata'? t.amount : -t.amount;
+    t.balance=running;
+    const k=t.date.slice(0,7);
+    monthly[k]??={in:0,out:0,s:0};
+    t.type==='Entrata'?monthly[k].in+=t.amount:monthly[k].out+=t.amount;
+    monthly[k].s=running;
+  });
+};
 
-      // Tabacco settimanale
-      [5, 12, 19, 26].forEach(
-        (d) =>
-          d <= lastDay(y, m) &&
-          push(
-            `${iso}-${String(d).padStart(2, "0")}`,
-            "Tabacco",
-            "Spesa",
-            20
-          )
-      );
+const render=()=>{
+  calc();
+  /* Cards */
+  document.getElementById('summary-cards').innerHTML='';
+  const totIn = Object.values(monthly).reduce((s,m)=>s+m.in,0),
+        totOut= Object.values(monthly).reduce((s,m)=>s+m.out,0),
+        avgOut= Math.round(totOut/Object.keys(monthly).length);
+  [['Saldo iniziale',START_BALANCE,''],['Entrate',totIn,'positive'],
+   ['Uscite',totOut,'negative'],['Media spese',avgOut,'negative'],
+   ['Saldo',running,running>=0?'positive':'negative']]
+  .forEach(([l,v,cls])=>{
+    const d=document.createElement('div');d.className='card';
+    d.innerHTML=`<h2>${l}</h2><p class='${cls}'>${fmt(v)}</p>`;document.getElementById('summary-cards').appendChild(d);});
 
-      // Abbonamenti
-      SUBS.forEach(([cat, amt, day, from]) => {
-        if (iso >= from) {
-          const d = Math.min(day, lastDay(y, m));
-          push(
-            `${iso}-${String(d).padStart(2, "0")}`,
-            cat,
-            "Spesa",
-            amt
-          );
-        }
+  /* Monthly table */
+  const mBody=document.querySelector('#monthly-table tbody');mBody.innerHTML='';
+  Object.keys(monthly).sort().forEach(k=>{
+    const {in:inn,out,s}=monthly[k];
+    mBody.insertAdjacentHTML('beforeend',
+    `<tr><td>${k}</td><td class='income'>${fmt(inn)}</td><td class='expense'>${fmt(out)}</td><td class='balance ${s>=0?'positive':'negative'}'>${fmt(s)}</td></tr>`);});
+
+  /* Transactions */
+  const tBody=document.querySelector('#transactions-table tbody');tBody.innerHTML='';
+  let cur='';tx.forEach(t=>{
+    const m=t.date.slice(0,7);
+    if(m!==cur){cur=m;const label=new Date(`${m}-01`).toLocaleDateString('it-IT',{month:'long',year:'numeric'});
+      tBody.insertAdjacentHTML('beforeend',`<tr class='month-sep'><td colspan='5'>${label.charAt(0).toUpperCase()+label.slice(1)}</td></tr>`);}
+    tBody.insertAdjacentHTML('beforeend',
+      `<tr><td>${t.date}</td><td>${t.category}</td>
+       <td><span class='badge ${t.type==='Entrata'?'income':'expense'}'>${t.type}</span></td>
+       <td class='${t.type==='Entrata'?'income':'expense'}'>${fmt(t.amount)}</td>
+       <td class='balance ${t.balance>=0?'positive':'negative'}'>${fmt(t.balance)}</td></tr>`);});
+};
+render();
+
+/* ---------- FORM MANUALE ---------- */
+document.getElementById('add-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const d=document.getElementById('f-date').value,
+        c=document.getElementById('f-cat').value||'Varie',
+        t=document.getElementById('f-type').value,
+        a=parseFloat(document.getElementById('f-amt').value);
+  push(d,c,t,a); e.target.reset(); render();
+});
+
+/* ---------- IMPORT CSV ---------- */
+document.getElementById('csv-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const file=document.getElementById('csv-file').files[0];
+  if(!file){alert('Seleziona un file CSV');return;}
+  Papa.parse(file,{
+    header:true,
+    skipEmptyLines:true,
+    complete:(res)=>{
+      /* Mappa colonne: personalizza qui se necessario */
+      res.data.forEach(row=>{
+        const rawDate  = row['Date']||row['Data']||row['date'],
+              rawDesc  = row['Description']||row['Descrizione']||row['description']||'Banca',
+              rawAmount= parseFloat(row['Amount']||row['Importo']||row['amount']);
+        if(!rawDate || isNaN(rawAmount)) return;
+        const type = rawAmount>=0 ? 'Entrata' : 'Spesa';
+        push(rawDate, rawDesc.trim(), type, Math.abs(rawAmount));
       });
-
-      cur.setMonth(m + 1);
-    }
-
-    /************* UTIL & RENDER *************/
-    const fmt = (v) => `€ ${Math.round(v).toLocaleString("it-IT")}`;
-    let monthly = {},
-      running;
-
-    const recalc = () => {
-      tx.sort((a, b) => new Date(a.date) - new Date(b.date));
-      running = START_BALANCE;
-      monthly = {};
-      tx.forEach((t) => {
-        running += t.type === "Entrata" ? t.amount : -t.amount;
-        t.balance = running;
-        const k = t.date.slice(0, 7);
-        monthly[k] ??= { in: 0, out: 0, s: 0 };
-        if (t.type === "Entrata") monthly[k].in += t.amount;
-        else monthly[k].out += t.amount;
-        monthly[k].s = running;
-      });
-    };
-
-    const cardWrap = document.getElementById("summary-cards"),
-      mBody = document.querySelector("#monthly-table tbody"),
-      tBody = document.querySelector("#transactions-table tbody");
-
-    const render = () => {
-      recalc();
-      cardWrap.innerHTML = "";
-      mBody.innerHTML = "";
-      tBody.innerHTML = "";
-
-      const totIn = Object.values(monthly).reduce((s, m) => s + m.in, 0),
-        totOut = Object.values(monthly).reduce((s, m) => s + m.out, 0),
-        nMesi = Object.keys(monthly).length,
-        avgOut = Math.round(totOut / nMesi);
-
-      [
-        ["Saldo iniziale", START_BALANCE, ""],
-        ["Entrate totali", totIn, "positive"],
-        ["Uscite totali", totOut, "negative"],
-        ["Spesa media mese", avgOut, "negative"],
-        ["Saldo corrente", running, running >= 0 ? "positive" : "negative"],
-      ].forEach(([l, v, cls]) => {
-        const d = document.createElement("div");
-        d.className = "card";
-        d.innerHTML = `<h2>${l}</h2><p class="${cls}">${fmt(v)}</p>`;
-        cardWrap.appendChild(d);
-      });
-
-      Object.keys(monthly)
-        .sort()
-        .forEach((k) => {
-          const { in: inn, out, s } = monthly[k];
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${k}</td>
-            <td class='income'>${fmt(inn)}</td>
-            <td class='expense'>${fmt(out)}</td>
-            <td class='balance ${s >= 0 ? "positive" : "negative"}'>${fmt(s)}</td>`;
-          mBody.appendChild(tr);
-        });
-
-      let curM = "";
-      tx.forEach((t) => {
-        const mKey = t.date.slice(0, 7);
-        if (mKey !== curM) {
-          curM = mKey;
-          const sep = document.createElement("tr");
-          sep.className = "month-sep";
-          const label = new Date(`${mKey}-01`).toLocaleDateString("it-IT", {
-            month: "long",
-            year: "numeric",
-          });
-          sep.innerHTML = `<td colspan='5'>${label
-            .charAt(0)
-            .toUpperCase()}${label.slice(1)}</td>`;
-          tBody.appendChild(sep);
-        }
-        const r = document.createElement("tr");
-        r.innerHTML = `
-          <td>${t.date}</td>
-          <td>${t.category}</td>
-          <td><span class='badge ${
-            t.type === "Entrata" ? "income" : "expense"
-          }'>${t.type}</span></td>
-          <td class='${t.type === "Entrata" ? "income" : "expense"}'>${fmt(
-          t.amount
-        )}</td>
-          <td class='balance ${
-            t.balance >= 0 ? "positive" : "negative"
-          }'>${fmt(t.balance)}</td>`;
-        tBody.appendChild(r);
-      });
-    };
-    render();
-
-    /* ---------- FORM HANDLER ---------- */
-    document
-      .getElementById("add-form")
-      .addEventListener("submit", (e) => {
-        e.preventDefault();
-        const d = document.getElementById("f-date").value,
-          c = document.getElementById("f-cat").value.trim() || "Varie",
-          t = document.getElementById("f-type").value,
-          a = parseFloat(document.getElementById("f-amt").value);
-        if (!d || !a) {
-          alert("Compila tutti i campi");
-          return;
-        }
-        push(d, c, t, a);
-        render();
-        e.target.reset();
-      });
-  </script>
+      render();
+      alert('Import CSV completato!');
+      document.getElementById('csv-form').reset();
+    }});
+});
+</script>
 </body>
 </html>
