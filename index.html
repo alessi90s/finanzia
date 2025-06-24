@@ -5,6 +5,7 @@
 <title>Quaderno Finanze Personali</title>
 
 <style>
+/* (stile invariato) */
 :root{--line:28px;--line-cl:#cdd7ee;--paper:#fbfcff;--ink:#1e293b;
       --green:#15803d;--red:#b91c1c;--lav:#d0d7e6;}
 *{box-sizing:border-box;margin:0;padding:0;font-family:"Courier New",monospace}
@@ -44,11 +45,11 @@ button{cursor:pointer;font-weight:700;background:var(--lav)}
   <h2>Riepilogo Mensile</h2>
   <table id="monthly"><thead><tr><th>Mese</th><th>Entrate</th><th>Uscite</th><th>Saldo</th></tr></thead><tbody></tbody></table>
 
-  <!-- Dettaglio transazioni fisse / manuali -->
+  <!-- Dettaglio transazioni -->
   <h2>Transazioni fisse / manuali</h2>
   <table id="detail"><thead><tr><th>Data</th><th>Categoria</th><th>Tipo</th><th>Importo</th><th>Saldo</th></tr></thead><tbody></tbody></table>
 
-  <!-- Inserimento manuale -->
+  <!-- Form manuale -->
   <h2>Inserisci spesa / entrata</h2>
   <form id="manual">
     <input type="date" id="m-date" required>
@@ -60,13 +61,13 @@ button{cursor:pointer;font-weight:700;background:var(--lav)}
 </div>
 
 <script>
-/* --------- UTIL --------- */
+/* ---------- UTIL ---------- */
 const START_BALANCE = 6100;
 const fmt = v => `€ ${Math.round(v).toLocaleString('it-IT')}`;
 const monthKey = d => d.slice(0,7);
 const lastDay  = (y,m)=>new Date(y,m+1,0).getDate();
 
-/* --------- GENERA FISSE --------- */
+/* ---------- FISSE ---------- */
 const subs=[['Netflix',19,26,'2025-06'],['Will',7,28,'2025-06'],['ChatGPT',23,22,'2025-06'],
   ['NowTV',5,19,'2025-07'],['Spotify',15,20,'2025-07'],['Prime Video AD',2,16,'2025-07'],
   ['Prime',5,16,'2025-07'],['iCloud',10,23,'2025-07'],['YouTube+',9,11,'2025-07']];
@@ -74,15 +75,13 @@ const oneOff=[['2025-06-27','Aereo Sicilia',53,'Spesa'],['2025-07-12','Beat Canz
   ['2025-07-16','Mix Canzone',27,'Spesa'],['2025-07-27','Aereo Sicilia',53,'Spesa'],
   ['2025-08-10','Rimborso 730',400,'Entrata'],['2025-08-12','Beat Canzone',35,'Spesa'],
   ['2025-08-16','Mix Canzone',27,'Spesa'],['2025-07-15','Tredicesima',1300,'Entrata']];
-const loan=['2025-07-01','2025-08-01','2025-09-01','2025-10-01']
-  .map(d=>[d,'Finanziamento',39,'Spesa']);
+const loan=['2025-07-01','2025-08-01','2025-09-01','2025-10-01'].map(d=>[d,'Finanziamento',39,'Spesa']);
 
-let tx=[];
-const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
+let tx=[]; const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
 
-(function generateFixed(){
-  oneOff.forEach(o=>push(...o));
-  loan.forEach(o=>push(...o));
+/* genera tutto */
+(function(){
+  oneOff.forEach(o=>push(...o)); loan.forEach(o=>push(...o));
   let cur=new Date(2025,5,24), end=new Date(2026,11,31);
   while(cur<=end){
     const y=cur.getFullYear(),m=cur.getMonth(),iso=`${y}-${String(m+1).padStart(2,'0')}`;
@@ -103,7 +102,7 @@ const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
   }
 })();
 
-/* --------- CALCOLO & RENDER --------- */
+/* ---------- RENDER ---------- */
 function render(){
   const C=document.getElementById('cards'),
         M=document.querySelector('#monthly tbody'),
@@ -114,37 +113,38 @@ function render(){
   let bal=START_BALANCE, monthly={};
   sorted.forEach(t=>{
     bal += t.type==='Entrata'?t.amount:-t.amount;
-    t.balance = bal;
+    t.balance=bal;
     const k=monthKey(t.date);
-    monthly[k]??={in:0,out:0,s:0};
-    t.type==='Entrata'?monthly[k].in += t.amount : monthly[k].out += t.amount;
-    monthly[k].s = bal;
+    if(!monthly[k]) monthly[k]={in:0,out:0,s:0};
+    t.type==='Entrata'?monthly[k].in+=t.amount:monthly[k].out+=t.amount;
+    monthly[k].s=bal;
   });
 
-  const totIn = Object.values(monthly).reduce((s,m)=>s+m.in,0),
-        totOut= Object.values(monthly).reduce((s,m)=>s+m.out,0),
-        avgOut = Math.round(totOut/Object.keys(monthly).length);
+  const keys=Object.keys(monthly).sort();
+  const totIn = keys.reduce((s,k)=>s+monthly[k].in,0);
+  const totOut= keys.reduce((s,k)=>s+monthly[k].out,0);
+  const avgOut= keys.length? Math.round(totOut/keys.length) : 0;
+
   [['Saldo iniziale',START_BALANCE,''],
    ['Entrate totali',totIn,'positive'],
    ['Uscite totali',totOut,'negative'],
    ['Spesa media mese',avgOut,'negative'],
    ['Saldo attuale',bal,bal>=0?'positive':'negative']]
   .forEach(([l,v,cls])=>{
-     C.insertAdjacentHTML('beforeend',
-       `<div class="card"><h2>${l}</h2><p class="${cls}">${fmt(v)}</p></div>`);
+    C.insertAdjacentHTML('beforeend',
+      `<div class="card"><h2>${l}</h2><p class="${cls}">${fmt(v)}</p></div>`);
   });
 
-  Object.keys(monthly).sort().forEach(m=>{
-    const {in:inn,out,s}=monthly[m];
+  keys.forEach(k=>{
+    const {in:inn,out,s}=monthly[k];
     M.insertAdjacentHTML('beforeend',
-      `<tr><td>${m}</td><td class="income">${fmt(inn)}</td><td class="expense">${fmt(out)}</td><td class="balance ${s>=0?'positive':'negative'}">${fmt(s)}</td></tr>`);
+      `<tr><td>${k}</td><td class="income">${fmt(inn)}</td><td class="expense">${fmt(out)}</td><td class="balance ${s>=0?'positive':'negative'}">${fmt(s)}</td></tr>`);
   });
 
-  let cur='';
-  sorted.forEach(t=>{
+  let current=''; sorted.forEach(t=>{
     const mk=monthKey(t.date);
-    if(mk!==cur){
-      cur=mk;
+    if(mk!==current){
+      current=mk;
       const label=new Date(`${mk}-01`).toLocaleDateString('it-IT',{month:'long',year:'numeric'});
       D.insertAdjacentHTML('beforeend',
         `<tr class="month-sep"><td colspan="5">${label.charAt(0).toUpperCase()+label.slice(1)}</td></tr>`);
@@ -155,7 +155,7 @@ function render(){
 }
 render();
 
-/* --------- Inserisci manuale --------- */
+/* ---------- Inserisci manuale ---------- */
 document.getElementById('manual').addEventListener('submit',e=>{
   e.preventDefault();
   const d=document.getElementById('m-date').value,
