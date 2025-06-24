@@ -1,59 +1,42 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Prospetto Entrate & Uscite</title>
 <style>
-:root{
-  --line:28px;--lcol:#cdd7ee;--paper:#fbfcff;--ink:#1e293b;
-  --green:#15803d;--red:#b91c1c;--lav:#d0d7e6;
-}
 *{box-sizing:border-box;margin:0;padding:0;font-family:"Courier New",monospace}
-body{
-  padding:2rem 1rem;
-  background:repeating-linear-gradient(var(--paper) 0 var(--line),
-                                       var(--lcol) var(--line) calc(var(--line)+1px));
-  color:var(--ink);
-}
-h1{text-align:center;margin-bottom:2rem;font-size:2rem;text-transform:uppercase;letter-spacing:1px}
-.container{max-width:1200px;margin:0 auto}
+body{padding:2rem 1rem;background:#fafcff;color:#1e293b}
+h1{text-align:center;margin-bottom:2rem;font-size:2rem;letter-spacing:1px;text-transform:uppercase}
+.container{max-width:1200px;margin:auto}
 
-/* CARDS */
+/* --- cards --- */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;margin-bottom:2rem}
-.card{background:#ffffffe6;border:1px solid #888;padding:1rem;border-radius:10px;text-align:center;
-      box-shadow:0 2px 4px rgba(0,0,0,.08);backdrop-filter:blur(2px)}
-.card h3{font-size:0.9rem;margin-bottom:0.25rem}
-.card p{font-size:1.35rem;font-weight:700}
-.positive{color:var(--green)}.negative{color:var(--red)}
+.card{background:#fff;border:1px solid #888;border-radius:10px;padding:1rem;text-align:center}
+.card h3{font-size:.9rem;margin-bottom:.25rem}.card p{font-size:1.35rem;font-weight:700}
+.positive{color:#15803d}.negative{color:#b91c1c}
 
-/* TABLES */
+/* --- tabelle --- */
 .table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;margin-bottom:2rem;background:#ffffffdd;border:1px solid #888;
-      backdrop-filter:blur(2px)}
+table{width:100%;border-collapse:collapse;margin-bottom:2rem;background:#ffffff;border:1px solid #888}
 thead{background:#343434;color:#fff}
-th,td{padding:0.55rem 0.6rem;text-align:center;font-size:0.9rem}
-tbody tr:nth-child(even){background:#f1f5f9ee}
-td.income{color:var(--green);font-weight:600}
-td.expense{color:var(--red);font-weight:600}
-td.balance{font-weight:700}
-.balance.positive{color:var(--green)}
-.balance.negative{color:var(--red)}
-.month-sep td{background:var(--lav);font-weight:700;text-align:left;font-size:1rem;padding-left:0.4rem}
-.badge{display:inline-block;padding:0.1rem 0.45rem;border-radius:4px;font-size:0.68rem;font-weight:700;color:#fff;text-transform:uppercase}
-.badge.income{background:var(--green)}
-.badge.expense{background:var(--red)}
-.sub-toggle{cursor:pointer}
-.hidden{display:none}
+th,td{padding:.55rem .6rem;text-align:center;font-size:.9rem}
+tbody tr:nth-child(even){background:#f1f5f9}
+td.income{color:#15803d;font-weight:600}td.expense{color:#b91c1c;font-weight:600}
+td.balance{font-weight:700}.balance.positive{color:#15803d}.balance.negative{color:#b91c1c}
+.month-sep td{background:#d0d7e6;font-weight:700;text-align:left;font-size:1rem;padding-left:.4rem}
+.badge{display:inline-block;padding:.1rem .45rem;border-radius:4px;font-size:.68rem;color:#fff;font-weight:700}
+.badge.income{background:#15803d}.badge.expense{background:#b91c1c}
+.sub-toggle{cursor:pointer}.hidden{display:none}
 
-/* FORM */
-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.5rem;margin-bottom:2rem}
-input,select,button{padding:0.35rem;border:1px solid #888;border-radius:4px;background:#fff7;font-family:inherit}
-button{cursor:pointer;font-weight:700;background:var(--lav)}
+/* --- form --- */
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.5rem}
+input,select,button{padding:.35rem;border:1px solid #888;border-radius:4px;background:#fefefe}
+button{cursor:pointer;font-weight:700;background:#d0d7e6}
 
-/* Responsive: colonna “Saldo” del dettaglio nascosta sotto 600 px */
+/* mobile: nasconde colonna saldo nel dettaglio */
 @media(max-width:600px){
   th:nth-child(5),td:nth-child(5){display:none}
-  th,td{font-size:0.78rem}
+  th,td{font-size:.78rem}
 }
 </style>
 </head>
@@ -64,161 +47,148 @@ button{cursor:pointer;font-weight:700;background:var(--lav)}
 
   <h2>Riepilogo Mensile</h2>
   <div class="table-wrap">
-    <table id="monthly">
-      <thead><tr><th>Mese</th><th>Entrate</th><th>Uscite</th><th>Saldo</th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <table id="monthly"><thead><tr><th>Mese</th><th>Entrate</th><th>Uscite</th><th>Saldo</th></tr></thead><tbody></tbody></table>
   </div>
 
   <h2>Dettaglio</h2>
   <div class="table-wrap">
-    <table id="detail">
-      <thead><tr><th>Data</th><th>Categoria</th><th>Tipo</th><th>Importo</th><th>Saldo</th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <table id="detail"><thead><tr><th>Data</th><th>Categoria</th><th>Tipo</th><th>Importo</th><th>Saldo</th></tr></thead><tbody></tbody></table>
   </div>
 
   <h2>Aggiungi transazione</h2>
-  <form id="manual">
-    <input type="date"   id="m-date" required>
-    <input type="text"   id="m-cat"  placeholder="Categoria" required>
-    <select id="m-type"><option>Entrata</option><option>Spesa</option></select>
-    <input type="number" id="m-amt"  placeholder="€" step="1" required>
+  <form id="add-form">
+    <input type="date"   id="f-date" required>
+    <input type="text"   id="f-cat"  placeholder="Categoria" required>
+    <select id="f-type"><option>Entrata</option><option>Spesa</option></select>
+    <input type="number" id="f-amt"  placeholder="€" step="1" required>
     <button>Inserisci</button>
   </form>
 </div>
 
 <script>
-/* --- UTIL --- */
-const START_BALANCE = 6100;
-const fmt = v => `€ ${Math.round(v).toLocaleString('it-IT')}`;
-const mk  = d => d.slice(0,7);
-const lastDay = (y,m)=>new Date(y,m+1,0).getDate();
+/* ------------ utility ------------- */
+const START_BALANCE = 6100,
+      fmt = v => `€ ${Math.round(v).toLocaleString('it-IT')}`,
+      mk  = d => d.slice(0,7),
+      last = (y,m) => new Date(y,m+1,0).getDate();
 
-/* --- CATEGORIE ABBONAMENTO --- */
-const subsSet=new Set(["Netflix","Will","ChatGPT","NowTV","Spotify","Prime Video AD","Prime","iCloud","YouTube+"]);
+/* ------------ dataset fisso ------------- */
+const subs = ["Netflix","Will","ChatGPT","NowTV","Spotify","Prime Video AD","Prime","iCloud","YouTube+"],
+      subsSet = new Set(subs);
 
-/* --- DATASET FISSO --- */
-const subsData=[["Netflix",19,26,"2025-06"],["Will",7,28,"2025-06"],["ChatGPT",23,22,"2025-06"],
-["NowTV",5,19,"2025-07"],["Spotify",15,20,"2025-07"],["Prime Video AD",2,16,"2025-07"],["Prime",5,16,"2025-07"],
-["iCloud",10,23,"2025-07"],["YouTube+",9,11,"2025-07"]];
-const oneOff=[["2025-06-27","Aereo Sicilia",53,"Spesa"],["2025-07-12","Beat Canzone",35,"Spesa"],
-["2025-07-16","Mix Canzone",27,"Spesa"],["2025-07-27","Aereo Sicilia",53,"Spesa"],
-["2025-08-10","Rimborso 730",400,"Entrata"],["2025-08-12","Beat Canzone",35,"Spesa"],
-["2025-08-16","Mix Canzone",27,"Spesa"],["2025-07-15","Tredicesima",1300,"Entrata"]];
-const loan=["2025-07-01","2025-08-01","2025-09-01","2025-10-01"].map(d=>[d,"Finanziamento",39,"Spesa"]);
+const subsData = [
+  ["Netflix",19,26,"2025-06"],["Will",7,28,"2025-06"],["ChatGPT",23,22,"2025-06"],
+  ["NowTV",5,19,"2025-07"],["Spotify",15,20,"2025-07"],["Prime Video AD",2,16,"2025-07"],
+  ["Prime",5,16,"2025-07"],["iCloud",10,23,"2025-07"],["YouTube+",9,11,"2025-07"]
+];
 
-/* --- COSTRUISCI TRANSAZIONI --- */
+const oneOff = [
+  ["2025-06-27","Aereo Sicilia",53,"Spesa"],["2025-07-12","Beat Canzone",35,"Spesa"],
+  ["2025-07-16","Mix Canzone",27,"Spesa"],["2025-07-27","Aereo Sicilia",53,"Spesa"],
+  ["2025-08-10","Rimborso 730",400,"Entrata"],["2025-08-12","Beat Canzone",35,"Spesa"],
+  ["2025-08-16","Mix Canzone",27,"Spesa"],["2025-07-15","Tredicesima",1300,"Entrata"]
+];
+
+const loan = ["2025-07-01","2025-08-01","2025-09-01","2025-10-01"].map(d=>[d,"Finanziamento",39,"Spesa"]);
+
+/* ------------ costruisci transazioni ------------- */
 let tx=[];
-const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
+const push = (d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
 
-/* genera ricorrenze */
-(function(){
+(function buildFixed(){
   oneOff.forEach(o=>push(...o));
   loan.forEach(o => push(...o));
-  let cur=new Date(2025,5,24), end=new Date(2026,11,31);
-  while(cur<=end){
+
+  for(let cur=new Date(2025,5,24); cur<=new Date(2026,11,31); cur.setMonth(cur.getMonth()+1)){
     const y=cur.getFullYear(), m=cur.getMonth(), iso=`${y}-${String(m+1).padStart(2,"0")}`;
+
     if(cur>=new Date("2025-07-01")){
       push(`${iso}-01`,"Stipendio","Entrata",1650);
       push(`${iso}-01`,"Ticket Edenred","Entrata",160);
     }
-    push(`${iso}-${lastDay(y,m)}`,"Affitto","Spesa",680);
-    if(iso!=="2025-08") push(`${iso}-${lastDay(y,m)}`,"ATM","Spesa",39);
+    push(`${iso}-${last(y,m)}`,"Affitto","Spesa",680);
+    if(iso!=="2025-08") push(`${iso}-${last(y,m)}`,"ATM","Spesa",39);
     [5,12,19,26].forEach(d=>{
-      if(d<=lastDay(y,m)) push(`${iso}-${String(d).padStart(2,"0")}`,"Tabacco","Spesa",20);
+      if(d<=last(y,m)) push(`${iso}-${String(d).padStart(2,"0")}`,"Tabacco","Spesa",20);
     });
     subsData.forEach(([cat,amt,day,from])=>{
       if(iso>=from){
-        const d=Math.min(day,lastDay(y,m));
+        const d=Math.min(day,last(y,m));
         push(`${iso}-${String(d).padStart(2,"0")}`,cat,"Spesa",amt);
       }
     });
-    cur.setMonth(m+1);
   }
 })();
 
-/* --- RENDER --- */
+/* ------------ render ------------- */
 function render(){
   const cards=document.getElementById("cards"),
         mBody=document.querySelector("#monthly tbody"),
         dBody=document.querySelector("#detail tbody");
-  cards.innerHTML=''; mBody.innerHTML=''; dBody.innerHTML='';
+  cards.innerHTML=mBody.innerHTML=dBody.innerHTML="";
 
-  const sorted=[...tx].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const sorted=[...tx].sort((a,b)=>new Date(a.date)-new Date(b.date)),
+        months={}, first=mk(sorted[0].date), lastM=mk(sorted.at(-1).date);
 
-  /* mappa mesi vuota */
-  const months={} , first=mk(sorted[0].date), last=mk(sorted[sorted.length-1].date);
-  let it=new Date(first+"-01"), stop=new Date(last+"-01");
-  while(it<=stop){
-    months[mk(it.toISOString().slice(0,10))]={in:0,out:0,s:0};
-    it.setMonth(it.getMonth()+1);
-  }
+  /* crea chiavi mesi vuote */
+  for(let d=new Date(first+"-01"); d<=new Date(lastM+"-01"); d.setMonth(d.getMonth()+1))
+    months[mk(d.toISOString().slice(0,10))]={in:0,out:0,s:0};
 
-  /* calcola saldi */
   let bal=START_BALANCE;
   sorted.forEach(t=>{
-    bal += t.type==='Entrata'?t.amount:-t.amount;
-    t.balance=bal;
+    bal += t.type==="Entrata"?t.amount:-t.amount;
+    t.balance = bal;
     const k=mk(t.date);
-    if(t.type==='Entrata') months[k].in  += t.amount;
-    else                   months[k].out += t.amount;
-    months[k].s = bal;
+    t.type==="Entrata"? months[k].in+=t.amount : months[k].out+=t.amount;
+    months[k].s = bal;  // ultimo saldo del mese
   });
 
-  /* CARD riepilogo */
-  const keys=Object.keys(months);
-  const totIn = keys.reduce((s,k)=>s+months[k].in ,0);
-  const totOut= keys.reduce((s,k)=>s+months[k].out,0);
-  const avgOut= keys.length?Math.round(totOut/keys.length):0;
+  /* cards */
+  const keys=Object.keys(months),
+        totIn = keys.reduce((s,k)=>s+months[k].in ,0),
+        totOut= keys.reduce((s,k)=>s+months[k].out,0),
+        avgOut= Math.round(totOut/keys.length);
   [["Saldo iniziale",START_BALANCE],
-   ["Entrate totali", totIn,"positive"],
-   ["Uscite totali",  totOut,"negative"],
+   ["Entrate totali",totIn,"positive"],
+   ["Uscite totali",totOut,"negative"],
    ["Spesa media mese",avgOut,"negative"],
-   ["Saldo attuale",bal,bal>=0?'positive':'negative']
-  ].forEach(([lbl,val,cls])=>{
+   ["Saldo attuale",bal,bal>=0?"positive":"negative"]
+  ].forEach(([l,v,cls])=>{
     cards.insertAdjacentHTML("beforeend",
-      `<div class="card"><h3>${lbl}</h3><p class="${cls||''}">${fmt(val)}</p></div>`);
+      `<div class="card"><h3>${l}</h3><p class="${cls||""}">${fmt(v)}</p></div>`);
   });
 
-  /* tabella mensile */
+  /* riepilogo mensile */
   keys.forEach(k=>{
     const {in:inn,out,s}=months[k];
     mBody.insertAdjacentHTML("beforeend",
-      `<tr><td>${k}</td><td class="income">${fmt(inn)}</td><td class="expense">${fmt(out)}</td><td class="balance ${s>=0?'positive':'negative'}">${fmt(s)}</td></tr>`);
+      `<tr><td>${k}</td><td class="income">${fmt(inn)}</td><td class="expense">${fmt(out)}</td><td class="balance ${s>=0?"positive":"negative"}">${fmt(s)}</td></tr>`);
   });
 
-  /* DETTAGLIO + toggle abbonamenti */
-  let current='',  subHeader={};           // track per mese
+  /* dettaglio + toggle abbonamenti */
+  let curMonth="", headerShown={};
   sorted.forEach(t=>{
-    const month=mk(t.date);
-    if(month!==current){
-      current=month;
-      subHeader[month]=false;
-      const label=new Date(`${month}-01`).toLocaleDateString("it-IT",{month:'long',year:'numeric'});
+    const m=mk(t.date);
+    if(m!==curMonth){
+      curMonth=m; headerShown[m]=false;
+      const label=new Date(m+"-01").toLocaleDateString("it-IT",{month:"long",year:"numeric"});
       dBody.insertAdjacentHTML("beforeend",
         `<tr class="month-sep"><td colspan="5">${label.charAt(0).toUpperCase()+label.slice(1)}</td></tr>`);
     }
     if(subsSet.has(t.category)){
-      if(!subHeader[month]){
+      if(!headerShown[m]){
         dBody.insertAdjacentHTML("beforeend",
-          `<tr class="sub-toggle" data-month="${month}"><td colspan="5">► Abbonamenti</td></tr>`);
-        subHeader[month]=true;
+          `<tr class="sub-toggle" data-m="${m}"><td colspan="5">► Abbonamenti</td></tr>`);
+        headerShown[m]=true;
       }
-      dBody.insertAdjacentHTML("beforeend",rowHTML(t,`subs-${month} hidden`));
-    }else{
-      dBody.insertAdjacentHTML("beforeend",rowHTML(t));
-    }
+      addRow(t,`sub-${m} hidden`);
+    }else addRow(t);
   });
-}
-function rowHTML(t,extra=''){
-  return `<tr class="${extra}">
-    <td>${t.date}</td>
-    <td>${t.category}</td>
-    <td><span class="badge ${t.type==='Entrata'?'income':'expense'}">${t.type}</span></td>
-    <td class="${t.type==='Entrata'?'income':'expense'}">${fmt(t.amount)}</td>
-    <td class="balance ${t.balance>=0?'positive':'negative'}">${fmt(t.balance)}</td>
-  </tr>`;
+
+  function addRow(t,extra=""){
+    dBody.insertAdjacentHTML("beforeend",
+      `<tr class="${extra}"><td>${t.date}</td><td>${t.category}</td><td><span class="badge ${t.type==="Entrata"?"income":"expense"}">${t.type}</span></td><td class="${t.type==="Entrata"?"income":"expense"}">${fmt(t.amount)}</td><td class="balance ${t.balance>=0?"positive":"negative"}">${fmt(t.balance)}</td></tr>`);
+  }
 }
 render();
 
@@ -226,20 +196,19 @@ render();
 document.querySelector("#detail").addEventListener("click",e=>{
   const row=e.target.closest(".sub-toggle");
   if(!row) return;
-  const m=row.dataset.month;
-  const nodes=document.querySelectorAll(`.subs-${m}`);
-  const hidden=[...nodes][0].classList.contains("hidden");
-  nodes.forEach(n=>n.classList.toggle("hidden",!hidden));
-  row.querySelector("td").textContent = hidden? "▼ Abbonamenti" : "► Abbonamenti";
+  const m=row.dataset.m, rows=document.querySelectorAll(`.sub-${m}`),
+        hidden=[...rows][0].classList.contains("hidden");
+  rows.forEach(r=>r.classList.toggle("hidden",!hidden));
+  row.firstElementChild.textContent = hidden?"▼ Abbonamenti":"► Abbonamenti";
 });
 
-/* form manuale */
-document.getElementById("manual").addEventListener("submit",e=>{
+/* aggiungi manuale */
+document.getElementById("add-form").addEventListener("submit",e=>{
   e.preventDefault();
-  const d=document.getElementById("m-date").value,
-        c=document.getElementById("m-cat").value.trim(),
-        t=document.getElementById("m-type").value,
-        a=parseFloat(document.getElementById("m-amt").value);
+  const d=document.getElementById("f-date").value,
+        c=document.getElementById("f-cat").value.trim(),
+        t=document.getElementById("f-type").value,
+        a=parseFloat(document.getElementById("f-amt").value);
   if(!d||!c||isNaN(a)) return;
   tx.push({date:d,category:c,type:t,amount:a});
   render();
