@@ -11,27 +11,34 @@
     *{box-sizing:border-box;margin:0;padding:0;font-family:"Courier New",monospace}
     body{
       padding:2rem 1rem;
-      background:repeating-linear-gradient(var(--paper-bg) 0 var(--line-height),var(--line-color) var(--line-height) calc(var(--line-height)+1px));
+      background:repeating-linear-gradient(var(--paper-bg) 0 var(--line-height),
+                                           var(--line-color) var(--line-height)
+                                           calc(var(--line-height)+1px));
       color:var(--ink);
     }
     h1{text-align:center;margin-bottom:2rem;font-size:2.2rem;text-transform:uppercase;letter-spacing:1px}
     .container{max-width:1200px;margin:0 auto}
 
     /* BADGES */
-    .badge{display:inline-block;padding:0.1rem 0.45rem;border-radius:4px;font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#fff}
+    .badge{display:inline-block;padding:0.1rem 0.45rem;border-radius:4px;
+           font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#fff}
     .badge.income{background:var(--green)}
     .badge.expense{background:var(--red)}
 
     /* CARDS */
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:2rem}
-    .card{background:#ffffffe0;border:1px solid #888;backdrop-filter:blur(2px);padding:1rem;border-radius:10px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.08)}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+           gap:1rem;margin-bottom:2rem}
+    .card{background:#ffffffe0;border:1px solid #888;backdrop-filter:blur(2px);
+          padding:1rem;border-radius:10px;text-align:center;
+          box-shadow:0 2px 4px rgba(0,0,0,.08)}
     .card h2{font-size:0.85rem;margin-bottom:0.15rem}
     .card p{font-size:1.4rem;font-weight:700}
     .card .positive{color:var(--green)}
     .card .negative{color:var(--red)}
 
     /* TABELLE */
-    table{width:100%;border-collapse:collapse;margin-bottom:2.5rem;background:#ffffffd0;border:1px solid #888;backdrop-filter:blur(2px)}
+    table{width:100%;border-collapse:collapse;margin-bottom:2.5rem;
+          background:#ffffffd0;border:1px solid #888;backdrop-filter:blur(2px)}
     thead{background:#343434;color:#fff}
     th,td{padding:0.55rem 0.6rem;text-align:center;font-size:0.9rem}
     tbody tr:nth-child(even){background:#f1f5f9dd}
@@ -42,8 +49,11 @@
     td.balance{font-weight:700}
     td.balance.positive{color:var(--green)}
     td.balance.negative{color:var(--red)}
+
+    /* SEZIONI */
     h2{margin:1.4rem 0 0.5rem;font-size:1.25rem;text-decoration:underline double}
-    .month-sep td{background:var(--lav);font-weight:700;text-align:left;font-size:1rem;padding-left:0.4rem}
+    .month-sep td{background:var(--lav);font-weight:700;text-align:left;
+                  font-size:1rem;padding-left:0.4rem}
   </style>
 </head>
 <body>
@@ -53,87 +63,164 @@
 
     <h2>Riepilogo Mensile</h2>
     <table id="monthly-table">
-      <thead><tr><th>Mese</th><th>Entrate</th><th>Uscite</th><th>Saldo Finale</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Mese</th><th>Entrate</th><th>Uscite</th><th>Saldo Finale</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
 
     <h2>Dettaglio Transazioni</h2>
     <table id="transactions-table">
-      <thead><tr><th>Data</th><th>Categoria</th><th>Tipo</th><th>Importo</th><th>Saldo dopo operazione</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Data</th><th>Categoria</th><th>Tipo</th>
+          <th>Importo</th><th>Saldo dopo operazione</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
 
 <script>
 /************* CONFIG *****************/
-const START_BALANCE = 6100;                // saldo 24-06-2025
+const START_BALANCE = 6100;                // saldo al 24-06-2025
 const START_DATE    = new Date('2025-06-24');
 const END_DATE      = new Date('2026-12-31');
 const lastDay = (y,m)=>new Date(y,m+1,0).getDate();
 
-// Abbonamenti mensili
+/* Abbonamenti mensili */
 const SUBS = [
-  ['Netflix',19,26,'2025-06'],['Will',7,28,'2025-06'],['ChatGPT',23,22,'2025-06'],
-  ['NowTV',5,19,'2025-07'],['Spotify',15,20,'2025-07'],['Prime Video AD',2,16,'2025-07'],
-  ['Prime',5,16,'2025-07'],['iCloud',10,23,'2025-07'],['YouTube+',9,11,'2025-07']
+  ['Netflix',19,26,'2025-06'],
+  ['Will',7,28,'2025-06'],
+  ['ChatGPT',23,22,'2025-06'],
+  ['NowTV',5,19,'2025-07'],
+  ['Spotify',15,20,'2025-07'],
+  ['Prime Video AD',2,16,'2025-07'],
+  ['Prime',5,16,'2025-07'],
+  ['iCloud',10,23,'2025-07'],
+  ['YouTube+',9,11,'2025-07']
 ];
-// Una tantum / rate
+
+/* Una-tantum e rate */
 const ONE_OFF = [
   ['2025-06-27','Aereo Sicilia',53,'Spesa'],
-  ['2025-07-12','Beat Canzone',35,'Spesa'],['2025-07-16','Mix Canzone',27,'Spesa'],['2025-07-27','Aereo Sicilia',53,'Spesa'],
-  ['2025-08-10','Rimborso 730',400,'Entrata'],['2025-08-12','Beat Canzone',35,'Spesa'],['2025-08-16','Mix Canzone',27,'Spesa'],
+  ['2025-07-12','Beat Canzone',35,'Spesa'],
+  ['2025-07-16','Mix Canzone',27,'Spesa'],
+  ['2025-07-27','Aereo Sicilia',53,'Spesa'],
+  ['2025-08-10','Rimborso 730',400,'Entrata'],
+  ['2025-08-12','Beat Canzone',35,'Spesa'],
+  ['2025-08-16','Mix Canzone',27,'Spesa'],
   ['2025-07-15','Tredicesima',1300,'Entrata']
 ];
-const LOAN = ['2025-07-01','2025-08-01','2025-09-01','2025-10-01'].map(d=>[d,'Finanziamento',39,'Spesa']);
+const LOAN = ['2025-07-01','2025-08-01','2025-09-01','2025-10-01']
+             .map(d=>[d,'Finanziamento',39,'Spesa']);
 
-/************* GENERA TRANS. ***********/
-const tx=[];
-const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
-[...ONE_OFF,...LOAN].forEach(([d,c,a,t])=>push(d,c,t,a));
+/************* GENERA TRANSAZIONI ***********/
+const tx = [];
+const push = (d,c,t,a) => tx.push({date:d,category:c,type:t,amount:a});
+[...ONE_OFF, ...LOAN].forEach(([d,c,a,t]) => push(d,c,t,a));
 
-let cur=new Date(START_DATE.getFullYear(),START_DATE.getMonth(),1);
-while(cur<=END_DATE){
-  const y=cur.getFullYear(), m=cur.getMonth(); const iso=`${y}-${String(m+1).padStart(2,'0')}`;
-  // Entrate fisse
-  if(cur>=new Date('2025-07-01')){push(`${iso}-01`,'Stipendio','Entrata',1650);push(`${iso}-01`,'Ticket Edenred','Entrata',160);}  
-  // Affitto & ATM
-  push(`${iso}-${lastDay(y,m)}`,'Affitto','Spesa',680);
-  if(iso!=='2025-08') push(`${iso}-${lastDay(y,m)}`,'ATM','Spesa',39);
-  // Tabacco settimanale
-  [5,12,19,26].forEach(d=>d<=lastDay(y,m)&&push(`${iso}-${String(d).padStart(2,'0')}`,'Tabacco','Spesa',20));
-  // Abbonamenti
-  SUBS.forEach(([cat,amt,day,from])=>{if(iso>=from){const d=Math.min(day,lastDay(y,m));push(`${iso}-${String(d).padStart(2,'0')}`,cat,'Spesa',amt);}});
-  cur.setMonth(m+1);
+let cur = new Date(START_DATE.getFullYear(), START_DATE.getMonth(), 1);
+while (cur <= END_DATE) {
+  const y = cur.getFullYear(),
+        m = cur.getMonth(),
+        iso = `${y}-${String(m+1).padStart(2,'0')}`;
+
+  /* Entrate fisse */
+  if (cur >= new Date('2025-07-01')) {
+    push(`${iso}-01`, 'Stipendio',      'Entrata', 1650);
+    push(`${iso}-01`, 'Ticket Edenred', 'Entrata', 160);
+  }
+
+  /* Affitto e ATM */
+  push(`${iso}-${lastDay(y,m)}`, 'Affitto', 'Spesa', 680);
+  if (iso !== '2025-08')
+    push(`${iso}-${lastDay(y,m)}`, 'ATM', 'Spesa', 39);
+
+  /* Tabacco settimanale */
+  [5,12,19,26].forEach(d =>
+    d <= lastDay(y,m) &&
+    push(`${iso}-${String(d).padStart(2,'0')}`, 'Tabacco', 'Spesa', 20)
+  );
+
+  /* Abbonamenti */
+  SUBS.forEach(([cat,amt,day,from]) => {
+    if (iso >= from) {
+      const d = Math.min(day, lastDay(y,m));
+      push(`${iso}-${String(d).padStart(2,'0')}`, cat, 'Spesa', amt);
+    }
+  });
+
+  cur.setMonth(m + 1);
 }
 
 /************* CALCOLI ***********/
-tx.sort((a,b)=>new Date(a.date)-new Date(b.date));
-let running=START_BALANCE;
-const monthly={};
-for(const t of tx){
-  running += t.type==='Entrata'? t.amount : -t.amount;
-  t.balance=running;
-  const key=t.date.slice(0,7);
-  monthly[key]??={in:0,out:0,s:0};
-  if(t.type==='Entrata') monthly[key].in+=t.amount; else monthly[key].out+=t.amount;
-  monthly[key].s=running;
+tx.sort((a,b) => new Date(a.date) - new Date(b.date));
+let running = START_BALANCE;
+const monthly = {};
+
+for (const t of tx) {
+  running += t.type === 'Entrata' ? t.amount : -t.amount;
+  t.balance = running;
+
+  const key = t.date.slice(0,7);
+  monthly[key] ??= {in:0,out:0,s:0};
+  if (t.type === 'Entrata') monthly[key].in += t.amount;
+  else                       monthly[key].out += t.amount;
+  monthly[key].s = running;
 }
-const fmt=v=>`€ ${Math.round(v).toLocaleString('it-IT')}`;
+const fmt = v => `€ ${Math.round(v).toLocaleString('it-IT')}`;
 
 /************* RENDER ***********/
-const cardWrap=document.getElementById('summary-cards');
-[["Saldo iniziale",START_BALANCE,''],["Entrate totali",Object.values(monthly).reduce((s,m)=>s+m.in,0),'positive'],["Uscite totali",Object.values(monthly).reduce((s,m)=>s+m.out,0),'negative'],["Saldo corrente",running,running>=0?'positive':'negative']].forEach(([l,v,cls])=>{const d=document.createElement('div');d.className='card';d.innerHTML=`<h2>${l}</h2><p class="${cls}">${fmt(v)}</p>`;cardWrap.appendChild(d);});
+const cardWrap = document.getElementById('summary-cards');
+[
+  ["Saldo iniziale", START_BALANCE, ''],
+  ["Entrate totali",  Object.values(monthly).reduce((s,m)=>s+m.in,0), 'positive'],
+  ["Uscite totali",   Object.values(monthly).reduce((s,m)=>s+m.out,0), 'negative'],
+  ["Saldo corrente",  running, running >= 0 ? 'positive' : 'negative']
+].forEach(([label, val, cls]) => {
+  const d = document.createElement('div');
+  d.className = 'card';
+  d.innerHTML = `<h2>${label}</h2><p class="${cls}">${fmt(val)}</p>`;
+  cardWrap.appendChild(d);
+});
 
-const mBody=document.querySelector('#monthly-table tbody');
-Object.keys(monthly).sort().forEach(k=>{const {in:inn,out,s}=monthly[k];const tr=document.createElement('tr');tr.innerHTML=`<td>${k}</td><td class='income'>${fmt(inn)}</td><td class='expense'>${fmt(out)}</td><td class='balance ${s>=0?'positive':'negative'}'>${fmt(s)}</td>`;mBody.appendChild(tr);});
+/* Riepilogo mensile */
+const mBody = document.querySelector('#monthly-table tbody');
+Object.keys(monthly).sort().forEach(k => {
+  const {in:inn,out,s} = monthly[k];
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    `<td>${k}</td>
+     <td class='income'>${fmt(inn)}</td>
+     <td class='expense'>${fmt(out)}</td>
+     <td class='balance ${s>=0?'positive':'negative'}'>${fmt(s)}</td>`;
+  mBody.appendChild(tr);
+});
 
-const tBody=document.querySelector('#transactions-table tbody');
-let currentMonth='';
-for(const t of tx){
-  const mKey=t.date.slice(0,7);
-  if(mKey!==currentMonth){currentMonth=mKey;const sep=document.createElement('tr');sep.className='month-sep';const label=new Date(`${mKey}-01`).toLocaleDateString('it-IT',{month:'long',year:'numeric'});sep.innerHTML=`<td colspan='5'>${label.charAt(0).toUpperCase()+label.slice(1)}</td>`;tBody.appendChild(sep);}  
-  const row=document.createElement('tr');
-  row.innerHTML=`<td>${t.date}</td><td>${t.category}</td><td><span class='badge ${t.type==='Entrata'?'income':'expense'}'>${t.type}</span></td><td class='${t.type==='Entrata'?'income':'expense'}'>${fmt(t.amount)}</td><td class='balance ${t.balance>=0?'positive':'negative'}'>${fmt(t.balance)}</td>`;
+/* Dettaglio transazioni */
+const tBody = document.querySelector('#transactions-table tbody');
+let currentMonth = '';
+for (const t of tx) {
+  const mKey = t.date.slice(0,7);
+  if (mKey !== currentMonth) {
+    currentMonth = mKey;
+    const sep = document.createElement('tr');
+    sep.className = 'month-sep';
+    const label = new Date(`${mKey}-01`)
+      .toLocaleDateString('it-IT',{month:'long',year:'numeric'});
+    sep.innerHTML = `<td colspan='5'>${label.charAt(0).toUpperCase()+label.slice(1)}</td>`;
+    tBody.appendChild(sep);
+  }
+  const row = document.createElement('tr');
+  row.innerHTML =
+    `<td>${t.date}</td>
+     <td>${t.category}</td>
+     <td><span class='badge ${t.type==='Entrata'?'income':'expense'}'>${t.type}</span></td>
+     <td class='${t.type==='Entrata'?'income':'expense'}'>${fmt(t.amount)}</td>
+     <td class='balance ${t.balance>=0?'positive':'negative'}'>${fmt(t.balance)}</td>`;
   tBody.appendChild(row);
 }
 </script>
