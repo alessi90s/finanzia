@@ -2,29 +2,43 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Finanze Personali</title>
+  <title>Quaderno Finanze Personali</title>
   <style>
-    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;margin:0;padding:0}
-    body{padding:1rem;background:#f5f7fa;color:#222}
-    h1{text-align:center;margin-bottom:2rem}
+    /* ---------- STILE QUADERNO ---------- */
+    :root{
+      --line-height: 28px;
+      --line-color: #c5d0e2;
+      --paper-bg: #fbfbfc;
+    }
+    *{box-sizing:border-box;font-family:"Courier New", Courier, monospace;margin:0;padding:0}
+    body{
+      padding:2rem;
+      background:repeating-linear-gradient(var(--paper-bg) 0 var(--line-height),var(--line-color) var(--line-height) calc(var(--line-height)+1px));
+      color:#222;
+    }
+    h1{text-align:center;margin-bottom:2rem;font-size:2rem;letter-spacing:1px}
     .container{max-width:1200px;margin:0 auto}
-    /* ---- CARDS ---- */
+
+    /* ---------- CARDS ---------- */
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:2rem}
-    .card{background:#fff;padding:1.2rem;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,.06);text-align:center}
-    .card h2{font-size:1rem;font-weight:600;color:#666;margin-bottom:0.4rem}
-    .card p{font-size:1.6rem;font-weight:700}
+    .card{background:#fff5;border:1px solid #7773;padding:1rem;border-radius:8px;text-align:center}
+    .card h2{font-size:0.9rem;color:#3a3a3a;margin-bottom:0.3rem}
+    .card p{font-size:1.4rem;font-weight:700}
     .income-color{color:#2e7d32}
     .expense-color{color:#c62828}
 
-    /* ---- TABLES ---- */
-    table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,.05);overflow:hidden;margin-bottom:3rem}
-    thead{background:#222;color:#fff;position:sticky;top:0}
-    th,td{padding:0.6rem 0.8rem;text-align:center;font-size:0.95rem}
-    tbody tr:nth-child(even){background:#f1f4f8}
+    /* ---------- TABLES ---------- */
+    table{width:100%;border-collapse:collapse;background:#fff5;border:1px solid #7773;margin-bottom:3rem}
+    thead{background:#3c3c3c;color:#fff}
+    th,td{padding:0.5rem 0.6rem;text-align:center;font-size:0.9rem}
+    tbody tr:nth-child(even){background:#f7f7f7c7}
     tbody td.income{color:#2e7d32;font-weight:600}
     tbody td.expense{color:#c62828;font-weight:600}
     tbody td.balance{font-weight:700}
-    h2{margin:1.5rem 0 0.8rem;font-size:1.4rem}
+    h2{margin:1.8rem 0 0.6rem;font-size:1.2rem;text-decoration:underline;}
+
+    /* separatore mese nella tabella transazioni */
+    .month-sep td{background:#d0d7e6;font-weight:700;text-align:left;font-size:1rem;padding-left:0.4rem}
   </style>
 </head>
 <body>
@@ -42,7 +56,7 @@
       <tbody></tbody>
     </table>
 
-    <!-- TRANSACTIONS -->
+    <!-- TRANSAZIONI -->
     <h2>Dettaglio Transazioni</h2>
     <table id="transactions-table">
       <thead>
@@ -52,91 +66,93 @@
     </table>
   </div>
 
-  <script>
-  /* ------------------ DATI ------------------ */
-  // Saldo iniziale al 24-06-2025
-  const startBalance = 6100.00;
+<script>
+/************** DATI **************/
+const startBalance = 6100;
+const transactions = [
+  {date:"2025-06-26",category:"Tabacco",type:"Spesa",amount:20},
+  {date:"2025-06-26",category:"Netflix",type:"Spesa",amount:19},
+  {date:"2025-06-27",category:"Aereo Sicilia",type:"Spesa",amount:53},
+  {date:"2025-06-28",category:"Will",type:"Spesa",amount:7},
+  {date:"2025-06-30",category:"Affitto",type:"Spesa",amount:680},
+  {date:"2025-07-01",category:"Stipendio",type:"Entrata",amount:1650},
+  {date:"2025-07-01",category:"Ticket Edenred",type:"Entrata",amount:160},
+  {date:"2025-07-15",category:"Tredicesima",type:"Entrata",amount:1300},
+  {date:"2025-07-19",category:"NowTV",type:"Spesa",amount:5},
+  {date:"2025-07-31",category:"Affitto",type:"Spesa",amount:680},
+  {date:"2025-08-01",category:"Stipendio",type:"Entrata",amount:1650},
+  {date:"2025-08-10",category:"Rimborso 730",type:"Entrata",amount:400},
+  {date:"2025-08-31",category:"Affitto",type:"Spesa",amount:680},
+  {date:"2025-09-01",category:"Stipendio",type:"Entrata",amount:1650},
+  {date:"2025-09-30",category:"Affitto",type:"Spesa",amount:680},
+  {date:"2025-10-01",category:"Stipendio",type:"Entrata",amount:1650},
+  {date:"2025-10-01",category:"Ticket Edenred",type:"Entrata",amount:160},
+  {date:"2025-10-30",category:"Affitto",type:"Spesa",amount:680}
+];
 
-  // ⚠️  Per ragioni di spazio mostro un sotto-insieme di movimenti.
-  //     Puoi aggiungerne altri mantenendo la stessa struttura.
-  const transactions = [
-    {date:"2025-06-26",category:"Tabacco",type:"Spesa",amount:20.00},
-    {date:"2025-06-26",category:"Netflix",type:"Spesa",amount:18.98},
-    {date:"2025-06-27",category:"Aereo Sicilia",type:"Spesa",amount:52.71},
-    {date:"2025-06-28",category:"Will",type:"Spesa",amount:7.00},
-    {date:"2025-06-30",category:"Affitto",type:"Spesa",amount:680.00},
-    {date:"2025-07-01",category:"Stipendio",type:"Entrata",amount:1650.00},
-    {date:"2025-07-01",category:"Ticket Edenred",type:"Entrata",amount:160.00},
-    {date:"2025-07-15",category:"Tredicesima",type:"Entrata",amount:1300.00},
-    {date:"2025-07-16",category:"Prime Video AD",type:"Spesa",amount:1.99},
-    {date:"2025-07-19",category:"NowTV",type:"Spesa",amount:4.99},
-    {date:"2025-07-31",category:"Affitto",type:"Spesa",amount:680.00},
-    {date:"2025-08-01",category:"Stipendio",type:"Entrata",amount:1650.00},
-    {date:"2025-08-10",category:"Rimborso 730",type:"Entrata",amount:400.00},
-    {date:"2025-08-31",category:"Affitto",type:"Spesa",amount:680.00},
-    {date:"2025-09-01",category:"Stipendio",type:"Entrata",amount:1650.00},
-    {date:"2025-09-30",category:"Affitto",type:"Spesa",amount:680.00},
-    {date:"2025-10-01",category:"Stipendio",type:"Entrata",amount:1650.00},
-    {date:"2025-10-01",category:"Ticket Edenred",type:"Entrata",amount:160.00},
-    {date:"2025-10-30",category:"Affitto",type:"Spesa",amount:680.00}
-  ];
+/******** UTILITÀ ********/  
+const eur = v =>
+  (Math.round(v)).toLocaleString("it-IT",{style:"currency",currency:"EUR",minimumFractionDigits:0,maximumFractionDigits:0});
 
-  /* ------------- FUNZIONI DI UTILITÀ ------------- */
-  const eur = v => v.toLocaleString("it-IT", {style:"currency",currency:"EUR"});
+transactions.sort((a,b)=> new Date(a.date)-new Date(b.date));
 
-  // Ordina le transazioni per data
-  transactions.sort((a,b)=> new Date(a.date) - new Date(b.date));
+/******** CALCOLO ********/  
+let running = startBalance;
+transactions.forEach(t=>{
+  running += t.type==="Entrata"? +t.amount : -t.amount;
+  t.balance = running;
+});
 
-  /* -------- CALCOLO SALDI E RIEPILOGHI -------- */
-  let runningBalance = startBalance;
-  transactions.forEach(t => {
-    runningBalance += (t.type === "Entrata" ? +t.amount : -t.amount);
-    t.balance = runningBalance; // saldo dopo operazione
-  });
+const monthly = {};
+transactions.forEach(t=>{
+  const m=t.date.slice(0,7);
+  if(!monthly[m]) monthly[m]={entrate:0,uscite:0,saldo:0};
+  if(t.type==="Entrata") monthly[m].entrate += t.amount; else monthly[m].uscite += t.amount;
+  monthly[m].saldo = t.balance;
+});
 
-  // Raggruppo per mese
-  const monthly = {};
-  transactions.forEach(t => {
-    const m = t.date.slice(0,7); // "YYYY-MM"
-    if(!monthly[m]) monthly[m] = {entrate:0, uscite:0, saldo:0};
-    if(t.type === "Entrata") monthly[m].entrate += t.amount; else monthly[m].uscite += t.amount;
-    monthly[m].saldo = t.balance;
-  });
+/******** CARD SUMMARY ********/  
+const cardsWrap=document.getElementById("summary-cards");
+const totIn=transactions.filter(t=>t.type==='Entrata').reduce((s,t)=>s+t.amount,0);
+const totOut=transactions.filter(t=>t.type==='Spesa').reduce((s,t)=>s+t.amount,0);
+const cards=[
+  {l:"Saldo iniziale",v:eur(startBalance)},
+  {l:"Entrate totali",v:eur(totIn),cls:"income-color"},
+  {l:"Uscite totali",v:eur(totOut),cls:"expense-color"},
+  {l:"Saldo corrente",v:eur(running)}
+];
+cards.forEach(c=>{
+  const div=document.createElement('div');div.className='card';
+  div.innerHTML=`<h2>${c.l}</h2><p class="${c.cls||''}">${c.v}</p>`;
+  cardsWrap.appendChild(div);
+});
 
-  /* -------- POPOLA SUMMARY CARDS -------- */
-  const totalIncome  = transactions.filter(t=>t.type==="Entrata").reduce((s,t)=>s+t.amount,0);
-  const totalExpense = transactions.filter(t=>t.type==="Spesa").reduce((s,t)=>s+t.amount,0);
-  const finalBalance = runningBalance;
+/******** TABELLA MENSILE ********/  
+const mBody=document.querySelector('#monthly-table tbody');
+Object.keys(monthly).sort().forEach(m=>{
+  const {entrate,uscite,saldo}=monthly[m];
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${m}</td><td class="income">${eur(entrate)}</td><td class="expense">${eur(uscite)}</td><td class="balance">${eur(saldo)}</td>`;
+  mBody.appendChild(tr);
+});
 
-  const cardsData = [
-    {label:"Saldo iniziale", value:eur(startBalance)},
-    {label:"Entrate totali", value:eur(totalIncome), cls:"income-color"},
-    {label:"Uscite totali",  value:eur(totalExpense),cls:"expense-color"},
-    {label:"Saldo corrente", value:eur(finalBalance)}
-  ];
-  const cardsWrap = document.getElementById("summary-cards");
-  cardsData.forEach(c=>{
-    const div=document.createElement("div");div.className="card";
-    div.innerHTML=`<h2>${c.label}</h2><p class="${c.cls||''}">${c.value}</p>`;
-    cardsWrap.appendChild(div);
-  });
-
-  /* -------- POPOLA TABELLA MENSILE -------- */
-  const monthlyBody = document.querySelector('#monthly-table tbody');
-  Object.keys(monthly).sort().forEach(m=>{
-    const {entrate,uscite,saldo}=monthly[m];
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${m}</td><td class="income">${eur(entrate)}</td><td class="expense">${eur(uscite)}</td><td class="balance">${eur(saldo)}</td>`;
-    monthlyBody.appendChild(tr);
-  });
-
-  /* -------- POPOLA TABELLA TRANSAZIONI -------- */
-  const txBody = document.querySelector('#transactions-table tbody');
-  transactions.forEach(t=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${t.date}</td><td>${t.category}</td><td>${t.type}</td><td class="${t.type==="Entrata"?'income':'expense'}">${eur(t.amount)}</td><td class="balance">${eur(t.balance)}</td>`;
-    txBody.appendChild(tr);
-  });
-  </script>
+/******** DETTAGLIO TRANSAZIONI PER MESE ********/  
+const txBody=document.querySelector('#transactions-table tbody');
+let currentMonth="";
+transactions.forEach(t=>{
+  const m=t.date.slice(0,7);
+  if(m!==currentMonth){
+    currentMonth=m;
+    const sep=document.createElement('tr');sep.className='month-sep';
+    const [y,mm]=m.split('-');
+    const meseLabel=new Date(`${m}-01`).toLocaleString('it-IT',{month:'long',year:'numeric'});
+    sep.innerHTML=`<td colspan="5">${meseLabel.charAt(0).toUpperCase()+meseLabel.slice(1)}</td>`;
+    txBody.appendChild(sep);
+  }
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td>${t.date}</td><td>${t.category}</td><td>${t.type}</td><td class="${t.type==='Entrata'?'income':'expense'}">${eur(t.amount)}</td><td class="balance">${eur(t.balance)}</td>`;
+  txBody.appendChild(tr);
+});
+</script>
 </body>
 </html>
