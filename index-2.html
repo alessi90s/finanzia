@@ -4,10 +4,9 @@
 <meta charset="UTF-8">
 <title>Prospetto Entrate & Uscite</title>
 <style>
-/* … stessi stili di prima, lasciati invariati … */
 *{box-sizing:border-box;margin:0;padding:0;font-family:"Courier New",monospace}
 body{padding:2rem 1rem;background:#fafcff;color:#1e293b}
-h1{text-align:center;margin-bottom:2rem;font-size:2rem;letter-spacing:1px;text-transform:uppercase}
+h1{text-align:center;margin-bottom:2rem;font-size:2rem;text-transform:uppercase;letter-spacing:1px}
 .container{max-width:1200px;margin:auto}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;margin-bottom:2rem}
 .card{background:#fff;border:1px solid #888;border-radius:10px;padding:1rem;text-align:center}
@@ -56,40 +55,39 @@ button{cursor:pointer;font-weight:700;background:#d0d7e6}
 </div>
 
 <script>
+/* ---- util ---- */
 const START = 6100,
       fmt  = v => `€ ${Math.round(v).toLocaleString('it-IT')}`,
       mk   = d => d.slice(0,7),
       last = (y,m)=>new Date(y,m+1,0).getDate();
 
-/* categorie abbonamenti */
-const subs = ["Netflix","Will","ChatGPT","NowTV","Spotify","Prime Video AD","Prime","iCloud","YouTube+"],
-      subsSet = new Set(subs);
+/* ---- categorie abbonamenti ---- */
+const subsSet = new Set(["Netflix","Will","ChatGPT","NowTV","Spotify","Prime Video AD","Prime","iCloud","YouTube+"]);
 
-/* abbonamenti (cat, tipo, importo, giorno, parte-da) */
+/* ---- dataset fisso ---- */
 const subsData = [
-  ["Netflix","Spesa",19,26,"2025-06"],["Will","Spesa",7,28,"2025-06"],["ChatGPT","Spesa",23,22,"2025-06"],
-  ["NowTV","Spesa",5,19,"2025-07"],["Spotify","Spesa",15,20,"2025-07"],["Prime Video AD","Spesa",2,16,"2025-07"],
-  ["Prime","Spesa",5,16,"2025-07"],["iCloud","Spesa",10,23,"2025-07"],["YouTube+","Spesa",9,11,"2025-07"]
+  ["Netflix","Spesa",19,26,"2025-06"],["Will","Spesa",7,28,"2025-06"],
+  ["ChatGPT","Spesa",23,22,"2025-06"],["NowTV","Spesa",5,19,"2025-07"],
+  ["Spotify","Spesa",15,20,"2025-07"],["Prime Video AD","Spesa",2,16,"2025-07"],
+  ["Prime","Spesa",5,16,"2025-07"],["iCloud","Spesa",10,23,"2025-07"],
+  ["YouTube+","Spesa",9,11,"2025-07"]
 ];
-
-/* one-off (data, cat, tipo, importo) */
 const oneOff = [
  ["2025-06-27","Aereo Sicilia","Spesa",53],["2025-07-12","Beat Canzone","Spesa",35],
  ["2025-07-16","Mix Canzone","Spesa",27],["2025-07-27","Aereo Sicilia","Spesa",53],
  ["2025-08-10","Rimborso 730","Entrata",400],["2025-08-12","Beat Canzone","Spesa",35],
  ["2025-08-16","Mix Canzone","Spesa",27],["2025-07-15","Tredicesima","Entrata",1300]
 ];
-
-/* rate finanziamento – ordine corretto: data, cat, tipo, importo */
 const loan = ["2025-07-01","2025-08-01","2025-09-01","2025-10-01"]
              .map(d=>[d,"Finanziamento","Spesa",39]);
 
-let tx=[];                          /* transazioni */
+/* ---- costruisci transazioni ---- */
+let tx=[];
 const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
 
-(function build(){
+(function buildFixed(){
   oneOff.forEach(o=>push(...o));
-  loan.forEach(o => push(...o));
+  loan.forEach(o=>push(...o));
 
   for(let cur=new Date(2025,5,24); cur<=new Date(2026,11,31); cur.setMonth(cur.getMonth()+1)){
     const y=cur.getFullYear(), m=cur.getMonth(), iso=`${y}-${String(m+1).padStart(2,'0')}`;
@@ -112,6 +110,7 @@ const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
   }
 })();
 
+/* ---- render ---- */
 function render(){
   const C=document.getElementById("cards"),
         MB=document.querySelector("#monthly tbody"),
@@ -119,48 +118,56 @@ function render(){
   C.innerHTML=MB.innerHTML=DB.innerHTML="";
 
   const sorted=[...tx].sort((a,b)=>new Date(a.date)-new Date(b.date)),
-        months={}, first=mk(sorted[0].date), lastM=mk(sorted[sorted.length-1].date);
+        months={}, first=mk(sorted[0].date),
+        lastM = mk(sorted[sorted.length-1].date);
 
+  /* crea ogni mese vuoto */
   for(let d=new Date(first+"-01"); d<=new Date(lastM+"-01"); d.setMonth(d.getMonth()+1))
-    months[mk(d.toISOString().slice(0,10))]={in:0,out:0,s:0};
+    months[mk(d.toISOString().slice(0,10))]={in:0,out:0,balance:0};
 
   let bal=START;
-  sorted.forEach(t=>{
+  for(const t of sorted){
     bal += t.type==="Entrata"?t.amount:-t.amount;
-    t.balance=bal;
+    t.balance = bal;
     const k=mk(t.date);
-    if(t.type==="Entrata") months[k].in += t.amount;
-    else                   months[k].out+= t.amount;
-    months[k].s = bal;
+    if(t.type==="Entrata") months[k].in  += t.amount;
+    else                   months[k].out += t.amount;
+    months[k].balance = bal;
+  }
+
+  /* cards */
+  let totIn=0, totOut=0;
+  for(const k in months){ totIn+=months[k].in; totOut+=months[k].out;}
+  const avgOut=Math.round(totOut/Object.keys(months).length);
+  [["Saldo iniziale",START],
+   ["Entrate totali", totIn,"positive"],
+   ["Uscite totali",  totOut,"negative"],
+   ["Spesa media mese",avgOut,"negative"],
+   ["Saldo attuale",bal, bal>=0?'positive':'negative']
+  ].forEach(([l,v,cls])=>{
+    C.insertAdjacentHTML("beforeend",`<div class="card"><h3>${l}</h3><p class="${cls||''}">${fmt(v)}</p></div>`);
   });
 
-  const keys=Object.keys(months),
-        totIn = keys.reduce((s,k)=>s+months[k].in ,0),
-        totOut= keys.reduce((s,k)=>s+months[k].out,0),
-        avgOut= Math.round(totOut/keys.length);
-
-  [["Saldo iniziale",START],["Entrate totali",totIn,"positive"],["Uscite totali",totOut,"negative"],
-   ["Spesa media mese",avgOut,"negative"],["Saldo attuale",bal,bal>=0?'positive':'negative']]
-  .forEach(([l,v,cls])=>C.insertAdjacentHTML("beforeend",`<div class="card"><h3>${l}</h3><p class="${cls||''}">${fmt(v)}</p></div>`));
-
-  keys.forEach(k=>{
-    const {in:inn,out,s}=months[k];
+  /* riepilogo mensile */
+  for(const k in months){
+    const m=months[k];
     MB.insertAdjacentHTML("beforeend",
-      `<tr><td>${k}</td><td class="income">${fmt(inn)}</td><td class="expense">${fmt(out)}</td><td class="balance ${s>=0?'positive':'negative'}">${fmt(s)}</td></tr>`);
-  });
+      `<tr><td>${k}</td><td class="income">${fmt(m.in)}</td><td class="expense">${fmt(m.out)}</td><td class="balance ${m.balance>=0?'positive':'negative'}">${fmt(m.balance)}</td></tr>`);
+  }
 
-  let cur='', hdr={};
+  /* dettaglio + toggle abbonamenti */
+  let cur='', shown={};
   sorted.forEach(t=>{
     const m=mk(t.date);
     if(m!==cur){
-      cur=m; hdr[m]=false;
+      cur=m; shown[m]=false;
       const lab=new Date(m+"-01").toLocaleDateString("it-IT",{month:"long",year:"numeric"});
       DB.insertAdjacentHTML("beforeend",`<tr class="month-sep"><td colspan="5">${lab.charAt(0).toUpperCase()+lab.slice(1)}</td></tr>`);
     }
     if(subsSet.has(t.category)){
-      if(!hdr[m]){
+      if(!shown[m]){
         DB.insertAdjacentHTML("beforeend",`<tr class="sub-toggle" data-m="${m}"><td colspan="5">► Abbonamenti</td></tr>`);
-        hdr[m]=true;
+        shown[m]=true;
       }
       addRow(t,`sub-${m} hidden`);
     }else addRow(t);
@@ -175,15 +182,14 @@ render();
 
 /* toggle abbonamenti */
 document.querySelector("#detail").addEventListener("click",e=>{
-  const trg=e.target.closest(".sub-toggle");
-  if(!trg) return;
-  const m=trg.dataset.m, rows=document.querySelectorAll(`.sub-${m}`),
-        hide=[...rows][0].classList.contains("hidden");
+  const tg=e.target.closest(".sub-toggle"); if(!tg) return;
+  const m=tg.dataset.m, rows=document.querySelectorAll(`.sub-${m}`);
+  const hide=[...rows][0].classList.contains("hidden");
   rows.forEach(r=>r.classList.toggle("hidden",!hide));
-  trg.firstChild.textContent = hide?"▼ Abbonamenti":"► Abbonamenti";
+  tg.firstChild.textContent = hide?"▼ Abbonamenti":"► Abbonamenti";
 });
 
-/* form manuale */
+/* aggiungi transazione */
 document.getElementById("add-form").addEventListener("submit",e=>{
   e.preventDefault();
   const d=document.getElementById("f-date").value,
