@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Prospetto Entrate & Uscite</title>
 <style>
+/* … stessi stili di prima, lasciati invariati … */
 *{box-sizing:border-box;margin:0;padding:0;font-family:"Courier New",monospace}
 body{padding:2rem 1rem;background:#fafcff;color:#1e293b}
 h1{text-align:center;margin-bottom:2rem;font-size:2rem;letter-spacing:1px;text-transform:uppercase}
@@ -55,22 +56,23 @@ button{cursor:pointer;font-weight:700;background:#d0d7e6}
 </div>
 
 <script>
-/* === util === */
 const START = 6100,
       fmt  = v => `€ ${Math.round(v).toLocaleString('it-IT')}`,
       mk   = d => d.slice(0,7),
       last = (y,m)=>new Date(y,m+1,0).getDate();
 
-/* === dataset fisso === */
+/* categorie abbonamenti */
 const subs = ["Netflix","Will","ChatGPT","NowTV","Spotify","Prime Video AD","Prime","iCloud","YouTube+"],
       subsSet = new Set(subs);
 
+/* abbonamenti (cat, tipo, importo, giorno, parte-da) */
 const subsData = [
   ["Netflix","Spesa",19,26,"2025-06"],["Will","Spesa",7,28,"2025-06"],["ChatGPT","Spesa",23,22,"2025-06"],
   ["NowTV","Spesa",5,19,"2025-07"],["Spotify","Spesa",15,20,"2025-07"],["Prime Video AD","Spesa",2,16,"2025-07"],
   ["Prime","Spesa",5,16,"2025-07"],["iCloud","Spesa",10,23,"2025-07"],["YouTube+","Spesa",9,11,"2025-07"]
 ];
 
+/* one-off (data, cat, tipo, importo) */
 const oneOff = [
  ["2025-06-27","Aereo Sicilia","Spesa",53],["2025-07-12","Beat Canzone","Spesa",35],
  ["2025-07-16","Mix Canzone","Spesa",27],["2025-07-27","Aereo Sicilia","Spesa",53],
@@ -78,14 +80,14 @@ const oneOff = [
  ["2025-08-16","Mix Canzone","Spesa",27],["2025-07-15","Tredicesima","Entrata",1300]
 ];
 
+/* rate finanziamento – ordine corretto: data, cat, tipo, importo */
 const loan = ["2025-07-01","2025-08-01","2025-09-01","2025-10-01"]
              .map(d=>[d,"Finanziamento","Spesa",39]);
 
-/* === costruisci transazioni === */
-let tx=[];
+let tx=[];                          /* transazioni */
 const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
 
-(function buildFixed(){
+(function build(){
   oneOff.forEach(o=>push(...o));
   loan.forEach(o => push(...o));
 
@@ -110,12 +112,11 @@ const push=(d,c,t,a)=>tx.push({date:d,category:c,type:t,amount:a});
   }
 })();
 
-/* === render === */
 function render(){
-  const cards=document.getElementById("cards"),
-        mBody=document.querySelector("#monthly tbody"),
-        dBody=document.querySelector("#detail tbody");
-  cards.innerHTML=mBody.innerHTML=dBody.innerHTML="";
+  const C=document.getElementById("cards"),
+        MB=document.querySelector("#monthly tbody"),
+        DB=document.querySelector("#detail tbody");
+  C.innerHTML=MB.innerHTML=DB.innerHTML="";
 
   const sorted=[...tx].sort((a,b)=>new Date(a.date)-new Date(b.date)),
         months={}, first=mk(sorted[0].date), lastM=mk(sorted[sorted.length-1].date);
@@ -126,11 +127,11 @@ function render(){
   let bal=START;
   sorted.forEach(t=>{
     bal += t.type==="Entrata"?t.amount:-t.amount;
-    t.balance = bal;
-    const key=mk(t.date);
-    if(t.type==="Entrata") months[key].in  += t.amount;
-    else                   months[key].out += t.amount;
-    months[key].s = bal;
+    t.balance=bal;
+    const k=mk(t.date);
+    if(t.type==="Entrata") months[k].in += t.amount;
+    else                   months[k].out+= t.amount;
+    months[k].s = bal;
   });
 
   const keys=Object.keys(months),
@@ -138,59 +139,51 @@ function render(){
         totOut= keys.reduce((s,k)=>s+months[k].out,0),
         avgOut= Math.round(totOut/keys.length);
 
-  [["Saldo iniziale",START],
-   ["Entrate totali", totIn,"positive"],
-   ["Uscite totali",  totOut,"negative"],
-   ["Spesa media mese",avgOut,"negative"],
-   ["Saldo attuale",bal, bal>=0?'positive':'negative']
-  ].forEach(([l,v,cls])=>{
-    cards.insertAdjacentHTML("beforeend",
-      `<div class="card"><h3>${l}</h3><p class="${cls||''}">${fmt(v)}</p></div>`);
-  });
+  [["Saldo iniziale",START],["Entrate totali",totIn,"positive"],["Uscite totali",totOut,"negative"],
+   ["Spesa media mese",avgOut,"negative"],["Saldo attuale",bal,bal>=0?'positive':'negative']]
+  .forEach(([l,v,cls])=>C.insertAdjacentHTML("beforeend",`<div class="card"><h3>${l}</h3><p class="${cls||''}">${fmt(v)}</p></div>`));
 
   keys.forEach(k=>{
     const {in:inn,out,s}=months[k];
-    mBody.insertAdjacentHTML("beforeend",
+    MB.insertAdjacentHTML("beforeend",
       `<tr><td>${k}</td><td class="income">${fmt(inn)}</td><td class="expense">${fmt(out)}</td><td class="balance ${s>=0?'positive':'negative'}">${fmt(s)}</td></tr>`);
   });
 
-  let cur='', headerShown={};
+  let cur='', hdr={};
   sorted.forEach(t=>{
     const m=mk(t.date);
     if(m!==cur){
-      cur=m; headerShown[m]=false;
-      const label=new Date(m+"-01").toLocaleDateString("it-IT",{month:"long",year:"numeric"});
-      dBody.insertAdjacentHTML("beforeend",
-        `<tr class="month-sep"><td colspan="5">${label.charAt(0).toUpperCase()+label.slice(1)}</td></tr>`);
+      cur=m; hdr[m]=false;
+      const lab=new Date(m+"-01").toLocaleDateString("it-IT",{month:"long",year:"numeric"});
+      DB.insertAdjacentHTML("beforeend",`<tr class="month-sep"><td colspan="5">${lab.charAt(0).toUpperCase()+lab.slice(1)}</td></tr>`);
     }
     if(subsSet.has(t.category)){
-      if(!headerShown[m]){
-        dBody.insertAdjacentHTML("beforeend",
-          `<tr class="sub-toggle" data-m="${m}"><td colspan="5">► Abbonamenti</td></tr>`);
-        headerShown[m]=true;
+      if(!hdr[m]){
+        DB.insertAdjacentHTML("beforeend",`<tr class="sub-toggle" data-m="${m}"><td colspan="5">► Abbonamenti</td></tr>`);
+        hdr[m]=true;
       }
       addRow(t,`sub-${m} hidden`);
     }else addRow(t);
   });
 
   function addRow(t,cls=''){
-    dBody.insertAdjacentHTML("beforeend",
-      `<tr class="${cls}"><td>${t.date}</td><td>${t.category}</td><td><span class="badge ${t.type==="Entrata"?"income":"expense"}">${t.type}</span></td><td class="${t.type==="Entrata"?"income":"expense"}">${fmt(t.amount)}</td><td class="balance ${t.balance>=0?"positive":"negative"}">${fmt(t.balance)}</td></tr>`);
+    DB.insertAdjacentHTML("beforeend",
+      `<tr class="${cls}"><td>${t.date}</td><td>${t.category}</td><td><span class="badge ${t.type==="Entrata"?"income":"expense"}">${t.type}</span></td><td class="${t.type==="Entrata"?"income":"expense"}">${fmt(t.amount)}</td><td class="balance ${t.balance>=0?'positive':'negative'}">${fmt(t.balance)}</td></tr>`);
   }
 }
 render();
 
-/* toggle abbo */
+/* toggle abbonamenti */
 document.querySelector("#detail").addEventListener("click",e=>{
-  const row=e.target.closest(".sub-toggle");
-  if(!row) return;
-  const m=row.dataset.m, rows=document.querySelectorAll(`.sub-${m}`),
+  const trg=e.target.closest(".sub-toggle");
+  if(!trg) return;
+  const m=trg.dataset.m, rows=document.querySelectorAll(`.sub-${m}`),
         hide=[...rows][0].classList.contains("hidden");
   rows.forEach(r=>r.classList.toggle("hidden",!hide));
-  row.firstChild.textContent = hide? "▼ Abbonamenti":"► Abbonamenti";
+  trg.firstChild.textContent = hide?"▼ Abbonamenti":"► Abbonamenti";
 });
 
-/* aggiungi transazione */
+/* form manuale */
 document.getElementById("add-form").addEventListener("submit",e=>{
   e.preventDefault();
   const d=document.getElementById("f-date").value,
