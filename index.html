@@ -2,82 +2,351 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>Calcolatore Budget Mensile</title>
+<title>Calcolatore Budget Mensile con Buste</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-body {font-family: Arial, sans-serif; background:#f4f6fb; margin:0; padding:20px;}
-h1 {text-align:center; margin-bottom:20px;}
-.container {max-width:800px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,.1);}
-label {display:block; margin-top:10px;}
-input {width:100%; padding:8px; margin-top:5px; border:1px solid #ccc; border-radius:5px;}
-button {margin-top:15px; padding:10px; width:100%; background:#4a67d6; color:#fff; border:none; border-radius:5px; cursor:pointer;}
-button:hover {background:#3b55b8;}
-.result {margin-top:20px; padding:15px; background:#f0f0f0; border-radius:5px;}
-.flex {display:flex; gap:15px;}
-.flex > div {flex:1;}
+:root{
+  --ink:#1e293b; --muted:#64748b; --ok:#16a34a; --bad:#b91c1c; --accent:#4a67d6;
+  --card:#ffffff; --bg:#f4f6fb; --line:#e2e8f0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+h1,h2{margin:0 0 14px}
+h1{text-align:center;margin-top:18px}
+.container{max-width:980px;margin:0 auto;padding:16px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h3{margin:0 0 10px;font-size:15px;color:var(--muted);letter-spacing:.2px;text-transform:uppercase}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label{font-size:13px;color:var(--muted)}
+input[type="number"]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
+select,button{padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;cursor:pointer}
+button.link{background:transparent;border:none;color:var(--accent);cursor:pointer;padding:0}
+.kpi{display:flex;gap:10px;flex-wrap:wrap}
+.kpi .pill{flex:1 1 160px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.kpi .pill .v{font-weight:800;font-size:18px}
+.ok{color:var(--ok)} .bad{color:var(--bad)}
+small.hint{color:var(--muted)}
+hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;color:#fff}
+.badge.ok{background:var(--ok)} .badge.bad{background:var(--bad)} .badge.neutral{background:#334155}
+.bar{height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden}
+.bar > div{height:100%;background:var(--accent)}
+.alloc-row{display:grid;grid-template-columns:130px 1fr 120px;gap:8px;align-items:center}
+.alloc-row input[type="number"]{text-align:right}
+.mode{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mode label{display:flex;gap:6px;align-items:center}
+.footer-note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+@media (max-width: 760px){
+  .grid{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
+  .alloc-row{grid-template-columns:1fr 1fr;gap:6px}
+  .alloc-row span.tag{grid-column:1 / -1}
+}
 </style>
 </head>
 <body>
   <h1>Calcolatore Budget Mensile</h1>
   <div class="container">
-    <label>Entrate totali (€):</label>
-    <input type="number" id="entrate" value="1681">
+    <div class="grid">
+      <!-- Entrate -->
+      <div class="card" style="grid-column: span 6;">
+        <h3>Entrate</h3>
+        <div class="row">
+          <div>
+            <label>Entrate totali (€)</label>
+            <input type="number" id="entrate" step="0.01" value="1681">
+          </div>
+          <div>
+            <label>Risparmio obiettivo (€)</label>
+            <input type="number" id="risparmio" step="0.01" value="200">
+          </div>
+        </div>
+        <small class="hint">Inserisci qui lo stipendio netto di questo mese e quanto vuoi mettere da parte.</small>
+      </div>
 
-    <h3>Spese fisse</h3>
-    <div class="flex">
-      <div>
-        <label>Affitto</label><input type="number" id="affitto" value="680">
-        <label>Netflix</label><input type="number" id="netflix" value="7">
-        <label>ATM</label><input type="number" id="atm" value="39">
-        <label>YouTube</label><input type="number" id="youtube" value="9.99">
+      <!-- Spese fisse (prefill con i tuoi valori) -->
+      <div class="card" style="grid-column: span 6;">
+        <h3>Spese fisse</h3>
+        <div class="row">
+          <div>
+            <label>Affitto</label>
+            <input type="number" id="affitto" step="0.01" value="680">
+            <label>Netflix</label>
+            <input type="number" id="netflix" step="0.01" value="7">
+            <label>ATM</label>
+            <input type="number" id="atm" step="0.01" value="39">
+            <label>YouTube</label>
+            <input type="number" id="youtube" step="0.01" value="9.99">
+          </div>
+          <div>
+            <label>Spotify</label>
+            <input type="number" id="spotify" step="0.01" value="21">
+            <label>Prime (AD+Std)</label>
+            <input type="number" id="prime" step="0.01" value="7">
+            <label>iCloud</label>
+            <input type="number" id="icloud" step="0.01" value="10">
+            <label>ChatGPT</label>
+            <input type="number" id="chatgpt" step="0.01" value="23">
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div>
+            <label>Spese variabili (cibo, benzina…)</label>
+            <input type="number" id="variabili" step="0.01" value="0">
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="primary" id="calc">Calcola</button>
+          </div>
+        </div>
       </div>
-      <div>
-        <label>Spotify</label><input type="number" id="spotify" value="21">
-        <label>Prime (AD + Std)</label><input type="number" id="prime" value="7">
-        <label>iCloud</label><input type="number" id="icloud" value="10">
-        <label>ChatGPT</label><input type="number" id="chatgpt" value="23">
+
+      <!-- KPI -->
+      <div class="card" style="grid-column: span 12;">
+        <h3>Riepilogo</h3>
+        <div class="kpi">
+          <div class="pill">
+            <div>Spese fisse</div>
+            <div class="v" id="k_fisse">€ 0</div>
+          </div>
+          <div class="pill">
+            <div>Spese variabili</div>
+            <div class="v" id="k_var">€ 0</div>
+          </div>
+          <div class="pill">
+            <div>Risparmio</div>
+            <div class="v" id="k_save">€ 0</div>
+          </div>
+          <div class="pill">
+            <div>Residuo disponibile</div>
+            <div class="v" id="k_residuo">€ 0</div>
+          </div>
+        </div>
       </div>
+
+      <!-- Allocazione residuo -->
+      <div class="card" style="grid-column: span 12;">
+        <h3>Dividi il residuo in “buste”</h3>
+        <div class="mode" style="margin-bottom:10px;">
+          <label><input type="radio" name="mode" value="percent" checked> Riparti a <b>percentuale</b></label>
+          <label><input type="radio" name="mode" value="euro"> Usa importi <b>fissi (€)</b></label>
+          <button class="link" id="resetDefault" title="Ripristina 40/40/20 o € 0">Ripristina default</button>
+        </div>
+
+        <!-- Percentuale -->
+        <div id="box-percent">
+          <div class="alloc-row">
+            <span class="tag"><b>Spesa</b></span>
+            <input type="range" id="p_spesa" min="0" max="100" value="40" oninput="syncRange('spesa')">
+            <input type="number" id="n_spesa" min="0" max="100" value="40" oninput="syncNumber('spesa')">
+          </div>
+          <div class="alloc-row">
+            <span class="tag"><b>Divertimento</b></span>
+            <input type="range" id="p_div" min="0" max="100" value="40" oninput="syncRange('div')">
+            <input type="number" id="n_div" min="0" max="100" value="40" oninput="syncNumber('div')">
+          </div>
+          <div class="alloc-row">
+            <span class="tag"><b>Extra</b></span>
+            <input type="range" id="p_extra" min="0" max="100" value="20" oninput="syncRange('extra')">
+            <input type="number" id="n_extra" min="0" max="100" value="20" oninput="syncNumber('extra')">
+          </div>
+          <small class="hint" id="sumHint">La somma deve fare 100% (adesso 100%).</small>
+        </div>
+
+        <!-- Euro -->
+        <div id="box-euro" style="display:none; margin-top:6px;">
+          <div class="alloc-row">
+            <span class="tag"><b>Spesa</b></span>
+            <div class="bar"><div id="bar_e_spesa" style="width:0%"></div></div>
+            <input type="number" id="e_spesa" step="0.01" value="0">
+          </div>
+          <div class="alloc-row">
+            <span class="tag"><b>Divertimento</b></span>
+            <div class="bar"><div id="bar_e_div" style="width:0%"></div></div>
+            <input type="number" id="e_div" step="0.01" value="0">
+          </div>
+          <div class="alloc-row">
+            <span class="tag"><b>Extra</b></span>
+            <div class="bar"><div id="bar_e_extra" style="width:0%"></div></div>
+            <input type="number" id="e_extra" step="0.01" value="0">
+          </div>
+          <small class="hint">Le barre mostrano quanto stai impegnando del residuo disponibile.</small>
+        </div>
+
+        <hr>
+        <div class="row">
+          <div>
+            <div><span class="badge neutral">Spesa</span> <b id="out_spesa">€ 0</b></div>
+            <div><span class="badge neutral">Divertimento</span> <b id="out_div">€ 0</b></div>
+            <div><span class="badge neutral">Extra</span> <b id="out_extra">€ 0</b></div>
+          </div>
+          <div>
+            <div>Residuo dopo buste: <b id="out_residuo" class="ok">€ 0</b></div>
+            <div id="warn_deficit" class="bad" style="display:none;margin-top:6px;">Attenzione: hai allocato più del residuo. Riduci una o più buste.</div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <h3>Spese variabili</h3>
-    <label>Altre spese (€):</label>
-    <input type="number" id="variabili" value="0">
-
-    <h3>Risparmio</h3>
-    <label>Quanto vuoi mettere da parte (€):</label>
-    <input type="number" id="risparmio" value="200">
-
-    <button onclick="calcola()">Calcola Budget</button>
-
-    <div class="result" id="risultato"></div>
+    <div class="footer-note">
+      I dati restano sul tuo dispositivo (salvati in locale). Cambia importi ogni mese e premi “Calcola”.
+    </div>
   </div>
 
 <script>
-function calcola() {
-  const entrate = parseFloat(document.getElementById('entrate').value) || 0;
-  const affitto = parseFloat(document.getElementById('affitto').value) || 0;
-  const netflix = parseFloat(document.getElementById('netflix').value) || 0;
-  const atm = parseFloat(document.getElementById('atm').value) || 0;
-  const youtube = parseFloat(document.getElementById('youtube').value) || 0;
-  const spotify = parseFloat(document.getElementById('spotify').value) || 0;
-  const prime = parseFloat(document.getElementById('prime').value) || 0;
-  const icloud = parseFloat(document.getElementById('icloud').value) || 0;
-  const chatgpt = parseFloat(document.getElementById('chatgpt').value) || 0;
-  const variabili = parseFloat(document.getElementById('variabili').value) || 0;
-  const risparmio = parseFloat(document.getElementById('risparmio').value) || 0;
+/* ------- helpers ------- */
+const € = (n)=> `€ ${Number(n||0).toFixed(2).replace('.',',')}`;
+const getN = (id)=> parseFloat(document.getElementById(id).value.replace(',','.')) || 0;
+const setText = (id,val)=> document.getElementById(id).textContent = typeof val==='string'? val : €(val);
 
-  const speseFisse = affitto + netflix + atm + youtube + spotify + prime + icloud + chatgpt;
-  const speseTotali = speseFisse + variabili + risparmio;
-  const rimanente = entrate - speseTotali;
-
-  document.getElementById('risultato').innerHTML = `
-    <p><b>Spese fisse:</b> € ${speseFisse.toFixed(2)}</p>
-    <p><b>Spese variabili:</b> € ${variabili.toFixed(2)}</p>
-    <p><b>Risparmio:</b> € ${risparmio.toFixed(2)}</p>
-    <hr>
-    <p><b>Totale spese:</b> € ${speseTotali.toFixed(2)}</p>
-    <p><b>Residuo per divertimento / extra:</b> <span style="color:${rimanente>=0?'green':'red'}">€ ${rimanente.toFixed(2)}</span></p>
-  `;
+/* ------- localStorage (autosave) ------- */
+const LS_KEY='budget_state_v1';
+function saveState(){
+  const ids=['entrate','risparmio','affitto','netflix','atm','youtube','spotify','prime','icloud','chatgpt','variabili',
+             'p_spesa','p_div','p_extra','n_spesa','n_div','n_extra','e_spesa','e_div','e_extra','mode'];
+  const st={};
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    st[id]= (el.type==='radio') ? (el.checked?el.value:null) : el.value;
+  });
+  // mode
+  st.mode = document.querySelector('input[name="mode"]:checked').value;
+  localStorage.setItem(LS_KEY, JSON.stringify(st));
 }
+function loadState(){
+  try{
+    const st=JSON.parse(localStorage.getItem(LS_KEY)||'{}');
+    for(const k in st){
+      const el=document.getElementById(k);
+      if(!el) continue;
+      if(k==='mode'){
+        document.querySelector(`input[name="mode"][value="${st[k]}"]`).checked=true;
+      }else{
+        el.value = st[k];
+      }
+    }
+    toggleMode();
+  }catch(e){}
+}
+
+/* ------- calcolo base ------- */
+function calcolaBase(){
+  const entrate  = getN('entrate');
+  const risparmio= getN('risparmio');
+  const fisse = getN('affitto') + getN('netflix') + getN('atm') + getN('youtube') +
+                getN('spotify') + getN('prime') + getN('icloud') + getN('chatgpt');
+  const variabili = getN('variabili');
+  const residuo = entrate - (fisse + variabili + risparmio);
+
+  setText('k_fisse', fisse);
+  setText('k_var', variabili);
+  setText('k_save', risparmio);
+  setText('k_residuo', residuo);
+  return {entrate, fisse, variabili, risparmio, residuo};
+}
+
+/* ------- modalità percentuale ------- */
+function syncRange(key){
+  // quando muovi lo slider, copia nel numero
+  const pId = {spesa:'p_spesa', div:'p_div', extra:'p_extra'}[key];
+  const nId = {spesa:'n_spesa', div:'n_div', extra:'n_extra'}[key];
+  document.getElementById(nId).value = document.getElementById(pId).value;
+  updateAll();
+}
+function syncNumber(key){
+  // quando digiti il numero, copia nello slider
+  const pId = {spesa:'p_spesa', div:'p_div', extra:'p_extra'}[key];
+  const nId = {spesa:'n_spesa', div:'n_div', extra:'n_extra'}[key];
+  let v = Math.max(0, Math.min(100, parseFloat(document.getElementById(nId).value)||0));
+  document.getElementById(nId).value = v;
+  document.getElementById(pId).value = v;
+  updateAll();
+}
+
+/* ------- modalità euro ------- */
+function barsEuro(residuo){
+  const tot = Math.max(0, residuo);
+  const s = getN('e_spesa'), d = getN('e_div'), e = getN('e_extra');
+  const sum = s+d+e;
+  const pct = (x)=> tot>0? Math.min(100, Math.round((x/tot)*100)) : 0;
+  document.getElementById('bar_e_spesa').style.width = pct(s)+'%';
+  document.getElementById('bar_e_div').style.width   = pct(d)+'%';
+  document.getElementById('bar_e_extra').style.width = pct(e)+'%';
+  const deficit = sum - tot;
+  const warn = document.getElementById('warn_deficit');
+  if(deficit>0){ warn.style.display='block'; setText('out_residuo', -deficit); document.getElementById('out_residuo').className='bad'; }
+  else{ warn.style.display='none'; setText('out_residuo', tot - sum); document.getElementById('out_residuo').className='ok'; }
+  setText('out_spesa', s);
+  setText('out_div', d);
+  setText('out_extra', e);
+}
+
+/* ------- toggle modalità ------- */
+function toggleMode(){
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  document.getElementById('box-percent').style.display = mode==='percent' ? 'block':'none';
+  document.getElementById('box-euro').style.display    = mode==='euro'    ? 'block':'none';
+}
+
+/* ------- aggiornamento completo ------- */
+function updateAll(){
+  const {residuo} = calcolaBase();
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+
+  if(mode==='percent'){
+    const p1 = getN('p_spesa'), p2 = getN('p_div'), p3 = getN('p_extra');
+    const sum = p1 + p2 + p3;
+    document.getElementById('sumHint').textContent = `La somma deve fare 100% (adesso ${sum.toFixed(0)}%).`;
+    // normalizza se non è 100 (evita buchi / eccedenze)
+    const w1 = sum>0 ? p1/sum : 0, w2 = sum>0 ? p2/sum : 0, w3 = sum>0 ? p3/sum : 0;
+    const a_spesa = Math.max(0, residuo) * w1;
+    const a_div   = Math.max(0, residuo) * w2;
+    const a_extra = Math.max(0, residuo) * w3;
+    setText('out_spesa', a_spesa);
+    setText('out_div',   a_div);
+    setText('out_extra', a_extra);
+    setText('out_residuo', residuo<0 ? residuo : 0);
+    document.getElementById('out_residuo').className = residuo<0 ? 'bad':'ok';
+    document.getElementById('warn_deficit').style.display = residuo<0 ? 'block':'none';
+  } else {
+    barsEuro(residuo);
+  }
+  saveState();
+}
+
+/* ------- eventi ------- */
+document.getElementById('calc').addEventListener('click', updateAll);
+document.querySelectorAll('input,select').forEach(el=>{
+  el.addEventListener('change', updateAll);
+  el.addEventListener('input',  (e)=>{
+    // aggiorna barre in tempo reale in modalità euro
+    if(e.target.id.startsWith('e_')) updateAll();
+  });
+});
+document.querySelectorAll('input[name="mode"]').forEach(r=>{
+  r.addEventListener('change', ()=>{ toggleMode(); updateAll(); });
+});
+document.getElementById('resetDefault').addEventListener('click', ()=>{
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  if(mode==='percent'){
+    document.getElementById('p_spesa').value=40; document.getElementById('n_spesa').value=40;
+    document.getElementById('p_div').value=40;   document.getElementById('n_div').value=40;
+    document.getElementById('p_extra').value=20; document.getElementById('n_extra').value=20;
+  } else {
+    document.getElementById('e_spesa').value=0;
+    document.getElementById('e_div').value=0;
+    document.getElementById('e_extra').value=0;
+  }
+  updateAll();
+});
+
+/* ------- boot ------- */
+loadState();
+updateAll();
 </script>
 </body>
 </html>
