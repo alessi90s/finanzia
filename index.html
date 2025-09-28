@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Budget Mensile + Tracker + Pianificazione</title>
+<title>Budget Mensile – Autosave (mese iniziale: Ottobre 2025)</title>
 <style>
 :root{ --ink:#1e293b; --muted:#64748b; --ok:#16a34a; --bad:#b91c1c; --accent:#4a67d6;
   --card:#ffffff; --bg:#f4f6fb; --line:#e2e8f0; }
@@ -28,9 +28,9 @@ button.primary{background:var(--accent);color:#fff;border-color:var(--accent);fo
 small.hint{color:var(--muted)}
 hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;color:#fff}
-.badge.neutral{background:#334155} .badge.ok{background:var(--ok)} .badge.bad{background:var(--bad)}
+.badge.neutral{background:#334155} .badge.ok{background:var(--ok)} .badge.bad{background:#b91c1c}
 .progress{height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden}
-.progress > div{height:100%;background:var(--accent)}
+.progress > div{height:100%;background:#4a67d6}
 .tbl{width:100%;border-collapse:collapse}
 .tbl th,.tbl td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;font-size:14px}
 .tbl th{color:#0f172a;background:#f8fafc}
@@ -42,7 +42,7 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
 </style>
 </head>
 <body>
-  <h1>Budget Mensile + Tracker + Pianificazione</h1>
+  <h1>Budget Mensile (Autosave)</h1>
   <div class="container">
 
     <!-- Mese + saldi -->
@@ -56,7 +56,7 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
           </div>
           <div>
             <label>Saldo iniziale conto (€)</label>
-            <input type="number" id="saldo_iniziale" step="0.01" value="196" oninput="updateAll()">
+            <input type="number" id="saldo_iniziale" step="0.01" value="196">
             <small class="hint">Esempio iniziale: 318 - 122 = 196</small>
           </div>
         </div>
@@ -66,14 +66,14 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
         <div class="row">
           <div>
             <label>Risparmi accumulati (€)</label>
-            <input type="number" id="risparmi" step="0.01" value="3500" oninput="saveGlobal()">
+            <input type="number" id="risparmi" step="0.01" value="3500">
           </div>
           <div>
             <label>Saldo fine mese (proiezione)</label>
             <input type="text" id="saldo_fine" readonly>
           </div>
         </div>
-        <small class="hint">I risparmi stanno separati dal conto. Con “Chiudi mese” puoi spostare il risparmio.</small>
+        <small class="hint">I risparmi non si usano per le spese correnti: sono mostrati solo per completezza.</small>
       </div>
     </div>
 
@@ -84,26 +84,13 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
         <div class="row">
           <div>
             <label>Entrate totali (€)</label>
-            <input type="number" id="entrate" step="0.01" value="1681" oninput="updateAll()">
+            <input type="number" id="entrate" step="0.01" value="1681">
           </div>
           <div>
             <label>Risparmio del mese (€)</label>
-            <input type="number" id="risparmio" step="0.01" value="200" oninput="updateAll()">
+            <input type="number" id="risparmio" step="0.01" value="200">
           </div>
         </div>
-        <div class="row">
-          <div>
-            <label>Azione risparmio alla chiusura</label>
-            <select id="azione_risparmio">
-              <option value="to_savings">Trasferisci a risparmi (− conto, + risparmi)</option>
-              <option value="to_account">Aggiungi al conto (+ conto)</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:end;gap:8px;">
-            <button class="primary" type="button" onclick="chiudiMese()">Chiudi mese</button>
-          </div>
-        </div>
-        <small class="hint">“Chiudi mese” applica l’azione sul risparmio e porta il saldo fine come saldo iniziale del mese successivo.</small>
       </div>
 
       <!-- Spese fisse -->
@@ -111,30 +98,30 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
         <h3>Spese fisse (mensili)</h3>
         <div class="row">
           <div>
-            <label>Affitto</label><input type="number" id="affitto" step="0.01" value="680" oninput="updateAll()">
-            <label>Netflix</label><input type="number" id="netflix" step="0.01" value="7" oninput="updateAll()">
-            <label>ATM</label><input type="number" id="atm" step="0.01" value="39" oninput="updateAll()">
-            <label>YouTube</label><input type="text" id="youtube" value="9,99" oninput="updateAll()">
+            <label>Affitto</label><input type="number" id="affitto" step="0.01" value="680">
+            <label>Netflix</label><input type="number" id="netflix" step="0.01" value="7">
+            <label>ATM</label><input type="number" id="atm" step="0.01" value="39">
+            <label>YouTube</label><input type="text" id="youtube" value="9,99">
           </div>
           <div>
-            <label>Spotify</label><input type="number" id="spotify" step="0.01" value="21" oninput="updateAll()">
-            <label>Prime (AD+Std)</label><input type="number" id="prime" step="0.01" value="7" oninput="updateAll()">
-            <label>iCloud</label><input type="number" id="icloud" step="0.01" value="10" oninput="updateAll()">
-            <label>ChatGPT</label><input type="number" id="chatgpt" step="0.01" value="23" oninput="updateAll()">
+            <label>Spotify</label><input type="number" id="spotify" step="0.01" value="21">
+            <label>Prime (AD+Std)</label><input type="number" id="prime" step="0.01" value="7">
+            <label>iCloud</label><input type="number" id="icloud" step="0.01" value="10">
+            <label>ChatGPT</label><input type="number" id="chatgpt" step="0.01" value="23">
           </div>
         </div>
         <div class="row">
           <div>
             <label>iPad (rata mensile)</label>
-            <input type="number" id="ipad" step="0.01" value="38.28" oninput="updateAll()">
+            <input type="number" id="ipad" step="0.01" value="38.28">
           </div>
           <div>
             <label>Spese variabili (cibo, benzina…)</label>
-            <input type="number" id="variabili" step="0.01" value="0" oninput="updateAll()">
+            <input type="number" id="variabili" step="0.01" value="0">
           </div>
         </div>
         <hr>
-        <small class="hint">Rate automatiche extra: +83 € a <b>Novembre</b> e +83 € a <b>Dicembre</b>. Inoltre puoi aggiungere “Extra pianificati” sotto.</small>
+        <small class="hint">Rate automatiche extra: +83 € a <b>Novembre</b> e +83 € a <b>Dicembre</b>.</small>
       </div>
 
       <!-- KPI -->
@@ -153,9 +140,9 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
       <div class="card" style="grid-column: span 12;">
         <h3>Dividi il residuo in “buste”</h3>
         <div class="flex" style="margin-bottom:10px;">
-          <label><input type="radio" name="mode" value="percent" checked onchange="toggleMode();updateAll()"> Percentuale</label>
-          <label><input type="radio" name="mode" value="euro" onchange="toggleMode();updateAll()"> Importi fissi (€)</label>
-          <button type="button" onclick="resetDefault()">Ripristina default</button>
+          <label><input type="radio" name="mode" value="percent" checked> Percentuale</label>
+          <label><input type="radio" name="mode" value="euro"> Importi fissi (€)</label>
+          <button type="button" id="btn_reset">Ripristina default</button>
         </div>
 
         <!-- Percentuale -->
@@ -163,20 +150,20 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
           <div class="row">
             <div>
               <label>Spesa (%)</label>
-              <input type="range" id="p_spesa" min="0" max="100" value="40" oninput="syncRange('spesa')">
-              <input type="number" id="n_spesa" min="0" max="100" value="40" oninput="syncNumber('spesa')">
+              <input type="range" id="p_spesa" min="0" max="100" value="40">
+              <input type="number" id="n_spesa" min="0" max="100" value="40">
             </div>
             <div>
               <label>Divertimento (%)</label>
-              <input type="range" id="p_div" min="0" max="100" value="40" oninput="syncRange('div')">
-              <input type="number" id="n_div" min="0" max="100" value="40" oninput="syncNumber('div')">
+              <input type="range" id="p_div" min="0" max="100" value="40">
+              <input type="number" id="n_div" min="0" max="100" value="40">
             </div>
           </div>
           <div class="row">
             <div>
               <label>Extra (%)</label>
-              <input type="range" id="p_extra" min="0" max="100" value="20" oninput="syncRange('extra')">
-              <input type="number" id="n_extra" min="0" max="100" value="20" oninput="syncNumber('extra')">
+              <input type="range" id="p_extra" min="0" max="100" value="20">
+              <input type="number" id="n_extra" min="0" max="100" value="20">
             </div>
             <div style="display:flex;align-items:end"><small class="hint" id="sumHint">Somma 100% (adesso 100%).</small></div>
           </div>
@@ -188,19 +175,19 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
             <div>
               <label>Spesa (€)</label>
               <div class="progress"><div id="bar_e_spesa" style="width:0%"></div></div>
-              <input type="number" id="e_spesa" step="0.01" value="0" oninput="updateAll()">
+              <input type="number" id="e_spesa" step="0.01" value="0">
             </div>
             <div>
               <label>Divertimento (€)</label>
               <div class="progress"><div id="bar_e_div" style="width:0%"></div></div>
-              <input type="number" id="e_div" step="0.01" value="0" oninput="updateAll()">
+              <input type="number" id="e_div" step="0.01" value="0">
             </div>
           </div>
           <div class="row">
             <div>
               <label>Extra (€)</label>
               <div class="progress"><div id="bar_e_extra" style="width:0%"></div></div>
-              <input type="number" id="e_extra" step="0.01" value="0" oninput="updateAll()">
+              <input type="number" id="e_extra" step="0.01" value="0">
             </div>
           </div>
         </div>
@@ -222,7 +209,7 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
       <!-- TRACKER SETTIMANALE -->
       <div class="card" style="grid-column: span 12;">
         <h3>Tracker settimanale</h3>
-        <small class="hint">Registra quanto spendi in <b>Spesa</b>, <b>Divertimento</b>, <b>Extra</b>. Confronto con budget settimanale del mese.</small>
+        <small class="hint">Registra spese per <b>Spesa</b>, <b>Divertimento</b>, <b>Extra</b>. Confronto con budget settimanale del mese.</small>
         <hr>
         <div class="row">
           <div>
@@ -244,8 +231,8 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
             <input type="number" id="t_importo" step="0.01" placeholder="0.00">
           </div>
           <div style="display:flex;align-items:end;gap:8px;">
-            <button class="primary" type="button" onclick="addTxn()">Aggiungi spesa</button>
-            <button type="button" onclick="clearMonth()">Svuota mese</button>
+            <button class="primary" type="button" id="btn_add">Aggiungi spesa</button>
+            <button type="button" id="btn_clear">Svuota mese</button>
           </div>
         </div>
 
@@ -259,60 +246,6 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
           </table>
         </div>
       </div>
-
-      <!-- PIANIFICAZIONE MESI -->
-      <div class="card" style="grid-column: span 12;">
-        <h3>Pianifica mesi</h3>
-        <small class="hint">Copia le impostazioni correnti su più mesi e aggiungi extra pianificati (una tantum).</small>
-        <hr>
-        <div class="row">
-          <div>
-            <label>Da mese</label>
-            <input type="month" id="plan_from">
-          </div>
-          <div>
-            <label>A mese</label>
-            <input type="month" id="plan_to">
-          </div>
-        </div>
-        <div class="row">
-          <div class="flex">
-            <label><input type="checkbox" id="plan_copy_income" checked> Copia entrate & risparmio</label>
-            <label><input type="checkbox" id="plan_copy_fixed" checked> Copia spese fisse</label>
-            <label><input type="checkbox" id="plan_copy_var" checked> Copia spese variabili</label>
-          </div>
-          <div style="display:flex;align-items:end;">
-            <button type="button" onclick="applyPlan()">Applica piano ai mesi</button>
-          </div>
-        </div>
-
-        <hr>
-        <h4>Extra pianificati (una tantum)</h4>
-        <div class="row">
-          <div>
-            <label>Mese</label><input type="month" id="px_mese">
-          </div>
-          <div>
-            <label>Descrizione</label><input type="text" id="px_desc" placeholder="Es. Bollo auto">
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <label>Importo (€)</label><input type="number" id="px_importo" step="0.01" placeholder="0.00">
-          </div>
-          <div style="display:flex;align-items:end;">
-            <button type="button" onclick="addPlannedExtra()">Aggiungi extra</button>
-          </div>
-        </div>
-        <div style="margin-top:8px;overflow:auto">
-          <table class="tbl" id="tbl_px">
-            <thead><tr><th>Mese</th><th>Descrizione</th><th>Importo</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <small class="hint">Gli extra pianificati vengono sommati alla colonna “Rate/Extra mese” quando selezioni quel mese.</small>
-      </div>
-
     </div>
   </div>
 
@@ -320,7 +253,6 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
 /* ====== Utils ====== */
 const euro = n => "€ " + Number(n||0).toFixed(2).replace(".",",");
 const getN = id => { const el=document.getElementById(id); const raw=(el?.value||"").toString().replace(",","."); const v=parseFloat(raw); return isNaN(v)?0:v; };
-const todayISO = ()=> new Date().toISOString().slice(0,10);
 const monthISO = d => d.slice(0,7);
 const daysInMonth=(y,m)=> new Date(y,m+1,0).getDate();
 
@@ -345,95 +277,56 @@ function weekIndexForDate(ym, dateStr){
 }
 
 /* ==== LocalStorage ==== */
-const GLOBAL_KEY='budget_global_v1';          // { risparmi }
 const MONTH_KEY = m => 'budget_month_'+m;     // stato mese (inputs base)
 const ALLOC_KEY = m => 'budget_alloc_'+m;     // {spesa,div,extra}
-const TXN_KEY   = m => 'budget_txn_'+m;       // [{...}]
-const PX_KEY    = 'budget_planned_extras_v1'; // [{m, desc, amt, id}]
-
-function saveGlobal(){
-  const g={ risparmi: getN('risparmi') };
-  localStorage.setItem(GLOBAL_KEY, JSON.stringify(g));
-}
-function loadGlobal(){
-  try{ const g=JSON.parse(localStorage.getItem(GLOBAL_KEY)||'{}'); if(g.risparmi!=null){ document.getElementById('risparmi').value=g.risparmi; } }catch(e){}
-}
+const TXN_KEY   = m => 'budget_txn_'+m;       // transazioni tracker
 
 function saveMonthState(m){
   const st={
     saldo_iniziale:getN('saldo_iniziale'), entrate:getN('entrate'), risparmio:getN('risparmio'),
-    affitto:getN('affitto'), netflix:getN('netflix'), atm:getN('atm'), youtube:document.getElementById('youtube').value,
+    affitto:getN('affitto'), netflix:getN('netflix'), atm:getN('atm'),
+    youtube:document.getElementById('youtube').value,
     spotify:getN('spotify'), prime:getN('prime'), icloud:getN('icloud'), chatgpt:getN('chatgpt'),
-    ipad:getN('ipad'), variabili:getN('variabili'), azione_risparmio:document.getElementById('azione_risparmio').value
+    ipad:getN('ipad'), variabili:getN('variabili'),
+    mode: document.querySelector('input[name="mode"]:checked').value,
+    p_spesa:getN('n_spesa'), p_div:getN('n_div'), p_extra:getN('n_extra'),
+    e_spesa:getN('e_spesa'), e_div:getN('e_div'), e_extra:getN('e_extra')
   };
   localStorage.setItem(MONTH_KEY(m), JSON.stringify(st));
 }
 function loadMonthState(m){
   try{
     const st=JSON.parse(localStorage.getItem(MONTH_KEY(m))||'{}');
-    for(const k in st){
-      if(k==='youtube') document.getElementById(k).value=st[k];
-      else if(document.getElementById(k)) document.getElementById(k).value=st[k];
+    const set=(k,v)=>{ if(document.getElementById(k)!=null) document.getElementById(k).value=v; };
+    for(const k in st){ set(k, st[k]); }
+    // radio mode
+    if(st.mode){
+      document.querySelector(`input[name="mode"][value="${st.mode}"]`).checked = true;
     }
-    if(st.azione_risparmio) document.getElementById('azione_risparmio').value=st.azione_risparmio;
+    // sincronizza slider % con numeri
+    if(st.p_spesa!=null){ document.getElementById('n_spesa').value=st.p_spesa; document.getElementById('p_spesa').value=st.p_spesa; }
+    if(st.p_div!=null){ document.getElementById('n_div').value=st.p_div; document.getElementById('p_div').value=st.p_div; }
+    if(st.p_extra!=null){ document.getElementById('n_extra').value=st.p_extra; document.getElementById('p_extra').value=st.p_extra; }
   }catch(e){}
 }
 function saveAlloc(m, alloc){ localStorage.setItem(ALLOC_KEY(m), JSON.stringify(alloc)); }
 function loadAlloc(m){ try{ return JSON.parse(localStorage.getItem(ALLOC_KEY(m))||"{}"); }catch(e){return {};}}
 function loadTxn(m){ try{ return JSON.parse(localStorage.getItem(TXN_KEY(m))||"[]"); }catch(e){return [];}}
 function saveTxn(m, arr){ localStorage.setItem(TXN_KEY(m), JSON.stringify(arr)); }
-function loadPlannedExtras(){
-  try{ return JSON.parse(localStorage.getItem(PX_KEY)||"[]"); }catch(e){return [];}
-}
-function savePlannedExtras(list){ localStorage.setItem(PX_KEY, JSON.stringify(list)); }
 
 /* ==== rate automatiche ==== */
 function extraRateForMonth(ym){ return (/-11$/.test(ym) || /-12$/.test(ym)) ? 83 : 0; }
 
-/* ==== extra pianificati – UI ==== */
-function addPlannedExtra(){
-  const m=document.getElementById('px_mese').value;
-  const desc=(document.getElementById('px_desc').value||'').trim();
-  const amt=getN('px_importo');
-  if(!m || !desc || !amt){ alert('Completa mese, descrizione e importo.'); return; }
-  const list=loadPlannedExtras();
-  list.push({id:Date.now(), m, desc, amt});
-  savePlannedExtras(list);
-  document.getElementById('px_desc').value='';
-  document.getElementById('px_importo').value='';
-  renderPlannedExtras();
-  updateAll();
-}
-function delPlannedExtra(id){
-  let list=loadPlannedExtras().filter(x=>x.id!==id);
-  savePlannedExtras(list);
-  renderPlannedExtras();
-  updateAll();
-}
-function renderPlannedExtras(){
-  const tbody=document.querySelector('#tbl_px tbody');
-  const list=loadPlannedExtras().sort((a,b)=>a.m.localeCompare(b.m));
-  tbody.innerHTML='';
-  list.forEach(x=>{
-    tbody.insertAdjacentHTML('beforeend',
-      `<tr><td>${x.m}</td><td>${x.desc}</td><td>${euro(x.amt)}</td><td><button onclick="delPlannedExtra(${x.id})">✕</button></td></tr>`);
-  });
-}
-
-/* ==== calcoli base & allocazione ==== */
+/* ==== UI: buste e KPI ==== */
 function toggleMode(){
   const mode=document.querySelector('input[name="mode"]:checked').value;
   document.getElementById("box-percent").style.display = mode==="percent" ? "block" : "none";
   document.getElementById("box-euro").style.display    = mode==="euro"    ? "block" : "none";
 }
-function plannedExtrasForMonth(m){
-  return loadPlannedExtras().filter(x=>x.m===m).reduce((s,x)=>s+Number(x.amt||0),0);
-}
+function plannedExtrasForMonth(){ return 0; } // placeholder se vuoi aggiungere extra pianificati
+
 function calcolaBase(){
   const m = document.getElementById("mese").value;
-  // salva stato del mese
-  saveMonthState(m);
-
   const saldoIni = getN("saldo_iniziale");
   const entrate  = getN("entrate");
   const risparmio= getN("risparmio");
@@ -453,15 +346,16 @@ function calcolaBase(){
   document.getElementById("k_residuo").textContent = euro(residuo);
   document.getElementById("saldo_fine").value      = euro(saldoFine);
 
-  return {residuo, saldoFine};
+  return {residuo};
 }
 function updateAll(){
-  const {residuo} = calcolaBase();
+  const m=document.getElementById("mese").value;
+  const {residuo}=calcolaBase();
   const mode=document.querySelector('input[name="mode"]:checked').value;
 
   let spesa=0,div=0,extra=0;
   if(mode==="percent"){
-    const p1=getN("p_spesa"), p2=getN("p_div"), p3=getN("p_extra");
+    const p1=getN("n_spesa"), p2=getN("n_div"), p3=getN("n_extra");
     const sum = p1+p2+p3;
     document.getElementById("sumHint").textContent = `Somma 100% (adesso ${sum.toFixed(0)}%).`;
     const w1=sum>0?p1/sum:0, w2=sum>0?p2/sum:0, w3=sum>0?p3/sum:0;
@@ -481,54 +375,21 @@ function updateAll(){
   document.getElementById("out_extra").textContent=euro(extra);
 
   // salva allocazione del mese per tracker
-  const m=document.getElementById("mese").value;
   saveAlloc(m,{spesa,div,extra});
+
+  // autosave dello stato mese
+  saveMonthState(m);
+
   renderTracker();
-}
-
-/* ==== Chiudi mese (applica il risparmio e avanza al successivo) ==== */
-function nextMonth(ym){
-  const [Y,M]=ym.split('-').map(Number);
-  const d=new Date(Y, M-1, 1); d.setMonth(d.getMonth()+1);
-  return d.toISOString().slice(0,7);
-}
-function chiudiMese(){
-  const m=document.getElementById('mese').value;
-  const azione=document.getElementById('azione_risparmio').value;
-  const risp=getN('risparmio');
-  const saldoFineTxt=document.getElementById('saldo_fine').value.replace('€','').trim().replace('.','').replace(',','.');
-  const saldoFine=parseFloat(saldoFineTxt)||0;
-
-  // aggiorna conti globali
-  let risparmi=getN('risparmi');
-  let saldoConto = saldoFine;
-  if(azione==='to_savings'){
-    risparmi += risp;       // + risparmio in salvadanaio
-    saldoConto -= risp;     // - dal conto (trasferimento)
-  }else{
-    saldoConto += risp;     // + sul conto (se lo tratti come entrata extra)
-  }
-  document.getElementById('risparmi').value=risparmi;
-  document.getElementById('saldo_iniziale').value=saldoConto; // per mese successivo
-  saveGlobal();
-
-  // passa al mese successivo mantenendo gli stessi valori (se già pianificati, verranno caricati)
-  const nm = nextMonth(m);
-  document.getElementById('mese').value = nm;
-  // se c'è stato un piano salvato per quel mese, lo ricarichiamo; altrimenti restano gli stessi input appena aggiornati
-  loadMonthState(nm);
-  updateAll();
-  renderTracker();
-  alert('Mese chiuso. Saldo e risparmi aggiornati. Sei passato a '+nm+'.');
 }
 
 /* ====== Tracker ====== */
 function addTxn(){
   const m=document.getElementById("mese").value;
-  const d=document.getElementById("t_data").value || todayISO();
-  if(monthISO(d)!==m){ alert("La data non appartiene al mese selezionato."); return; }
+  const d=document.getElementById("t_data").value;
   const cat=document.getElementById("t_cat").value;
   const amt=getN("t_importo");
+  if(!d || monthISO(d)!==m){ alert("La data deve appartenere al mese selezionato."); return; }
   if(!amt){ alert("Inserisci un importo valido."); return; }
   const list=loadTxn(m);
   const id=Date.now();
@@ -556,8 +417,6 @@ function renderTracker(){
   const alloc=loadAlloc(m);
   const list=loadTxn(m);
   const weeks=monthWeeks(m);
-  const today=new Date(), ymToday=today.toISOString().slice(0,7);
-  const nowWeek = (ymToday!==m)? weeks.length : weekIndexForDate(m, todayISO());
 
   const by = {
     Spesa: {monthly:alloc.spesa||0},
@@ -566,6 +425,10 @@ function renderTracker(){
   };
   const nWeeks=weeks.length;
   for(const k in by){ by[k].perWeek = (by[k].monthly||0)/nWeeks; }
+
+  // usa oggi per limite settimane se il mese è quello corrente, altrimenti considera tutte le settimane
+  const today=new Date(), ymToday=today.toISOString().slice(0,7);
+  const nowWeek = (ymToday!==m)? weeks.length : weekIndexForDate(m, today.toISOString().slice(0,10));
 
   const spentToWeek = {Spesa:0, Divertimento:0, Extra:0};
   list.forEach(t=>{ const w=weekIndexForDate(m,t.date); if(w<=nowWeek) spentToWeek[t.cat]+= Number(t.amt||0); });
@@ -604,60 +467,75 @@ function renderTracker(){
   });
 }
 
-/* ===== Pianifica mesi – copia impostazioni ===== */
-function monthRange(from,to){
-  const out=[]; if(!from||!to) return out;
-  const [Y1,M1]=from.split('-').map(Number);
-  const [Y2,M2]=to.split('-').map(Number);
-  let d=new Date(Y1,M1-1,1), end=new Date(Y2,M2-1,1);
-  while(d<=end){ out.push(d.toISOString().slice(0,7)); d.setMonth(d.getMonth()+1); }
-  return out;
-}
-function applyPlan(){
-  const from=document.getElementById('plan_from').value;
-  const to=document.getElementById('plan_to').value;
-  const months=monthRange(from,to);
-  if(months.length===0){ alert('Seleziona un intervallo valido.'); return; }
-
-  const copyIncome=document.getElementById('plan_copy_income').checked;
-  const copyFixed =document.getElementById('plan_copy_fixed').checked;
-  const copyVar   =document.getElementById('plan_copy_var').checked;
-
-  // prendi stato corrente come template
-  const tpl = JSON.parse(localStorage.getItem(MONTH_KEY(document.getElementById('mese').value))||'{}');
-  months.forEach(m=>{
-    const st=JSON.parse(localStorage.getItem(MONTH_KEY(m))||'{}');
-    if(copyIncome){ st.entrate=tpl.entrate; st.risparmio=tpl.risparmio; st.azione_risparmio=tpl.azione_risparmio||'to_savings'; }
-    if(copyFixed){
-      ['affitto','netflix','atm','youtube','spotify','prime','icloud','chatgpt','ipad'].forEach(k=> st[k]=tpl[k]);
-    }
-    if(copyVar){ st.variabili=tpl.variabili; }
-    // saldo_iniziale lo lasciamo invariato (sarà aggiornato da “Chiudi mese” mese per mese)
-    localStorage.setItem(MONTH_KEY(m), JSON.stringify(st));
+/* ====== Event binding + Autosave su ogni modifica ====== */
+function bindAutosave(){
+  // tutti gli inputs salvano e ricalcolano
+  document.querySelectorAll('input,select').forEach(el=>{
+    el.addEventListener('input', ()=> updateAll());
+    el.addEventListener('change',()=> updateAll());
   });
-  alert('Piano applicato a '+months.length+' mese/i.');
+
+  // sincronia slider/numero per percentuali
+  const syncPair = (rangeId, numId)=>{
+    const r=document.getElementById(rangeId), n=document.getElementById(numId);
+    r.addEventListener('input', ()=>{ n.value=r.value; updateAll(); });
+    n.addEventListener('input', ()=>{ 
+      let v = Math.max(0, Math.min(100, parseFloat(n.value||0)));
+      n.value=v; r.value=v; updateAll();
+    });
+  };
+  syncPair('p_spesa','n_spesa');
+  syncPair('p_div','n_div');
+  syncPair('p_extra','n_extra');
+
+  // toggle mode
+  document.querySelectorAll('input[name="mode"]').forEach(radio=>{
+    radio.addEventListener('change', ()=>{ toggleMode(); updateAll(); });
+  });
+
+  // bottoni tracker
+  document.getElementById('btn_add').addEventListener('click', addTxn);
+  document.getElementById('btn_clear').addEventListener('click', clearMonth);
+
+  // reset buste
+  document.getElementById('btn_reset').addEventListener('click', ()=>{
+    document.getElementById("p_spesa").value=40; document.getElementById("n_spesa").value=40;
+    document.getElementById("p_div").value=40;   document.getElementById("n_div").value=40;
+    document.getElementById("p_extra").value=20; document.getElementById("n_extra").value=20;
+    document.getElementById("e_spesa").value=0;
+    document.getElementById("e_div").value=0;
+    document.getElementById("e_extra").value=0;
+    updateAll();
+  });
 }
 
-/* ==== Boot ==== */
+/* ====== Boot ====== */
 (function init(){
-  const today = todayISO();
-  const m = monthISO(today);
-  document.getElementById("mese").value = m;
-  document.getElementById("t_data").value = today;
+  // Mese iniziale: Ottobre 2025
+  const DEFAULT_START = '2025-10';
+  const meseEl = document.getElementById("mese");
+  meseEl.value = DEFAULT_START;
 
-  // pianificazione default date picker
-  document.getElementById('plan_from').value = m;
-  document.getElementById('plan_to').value = m;
+  // Data tracker default = primo giorno del mese iniziale
+  const d = new Date(2025, 9, 1); // 9 = Ottobre
+  document.getElementById("t_data").value = d.toISOString().slice(0,10);
 
-  loadGlobal();
-  loadMonthState(m);
-  renderPlannedExtras();
+  // carica eventuali dati salvati per ottobre 2025
+  loadMonthState(DEFAULT_START);
+  bindAutosave();
   toggleMode();
   updateAll();
+  renderTracker();
 
-  document.getElementById("mese").addEventListener("change", ()=>{
-    const mm=document.getElementById("mese").value;
-    loadMonthState(mm);
+  // quando cambi mese, carica salvato e ricalcola
+  meseEl.addEventListener("change", ()=>{
+    const m = meseEl.value;
+    // se non c'è una data nel mese scelto, metti il 1°
+    const parts=m.split('-'); const d2=new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, 1);
+    document.getElementById("t_data").value = d2.toISOString().slice(0,10);
+
+    loadMonthState(m);
+    toggleMode();
     updateAll();
     renderTracker();
   });
