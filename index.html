@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Calcolatore Budget Mensile con Buste</title>
+<title>Calcolatore Budget Mensile + Tracker Settimanale</title>
 <style>
 :root{
   --ink:#1e293b; --muted:#64748b; --ok:#16a34a; --bad:#b91c1c; --accent:#4a67d6;
@@ -12,44 +12,50 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 h1,h2{margin:0 0 14px}
-h1{text-align:center;margin-top:18px}
-.container{max-width:980px;margin:0 auto;padding:16px}
+h1{text-align:center;margin:16px 0}
+.container{max-width:1024px;margin:0 auto;padding:16px}
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
 .card h3{margin:0 0 10px;font-size:15px;color:var(--muted);letter-spacing:.2px;text-transform:uppercase}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 label{font-size:13px;color:var(--muted)}
-input[type="number"]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
-input[type="text"]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
-select,button{padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
-button.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;cursor:pointer}
-button.link{background:transparent;border:none;color:var(--accent);cursor:pointer;padding:0}
+input[type="number"],input[type="text"],input[type="date"],input[type="month"],select{
+  width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
+button{padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px;cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
 .kpi{display:flex;gap:10px;flex-wrap:wrap}
-.kpi .pill{flex:1 1 160px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.kpi .pill{flex:1 1 180px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
 .kpi .pill .v{font-weight:800;font-size:18px}
 .ok{color:var(--ok)} .bad{color:var(--bad)}
 small.hint{color:var(--muted)}
 hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;color:#fff}
-.badge.ok{background:var(--ok)} .badge.bad{background:var(--bad)} .badge.neutral{background:#334155}
-.bar{height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden}
-.bar > div{height:100%;background:var(--accent)}
-.alloc-row{display:grid;grid-template-columns:130px 1fr 120px;gap:8px;align-items:center}
-.alloc-row input[type="number"]{text-align:right}
-.mode{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.mode label{display:flex;gap:6px;align-items:center}
-.footer-note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+.badge.neutral{background:#334155} .badge.ok{background:var(--ok)} .badge.bad{background:var(--bad)}
+.progress{height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden}
+.progress > div{height:100%;background:var(--accent)}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;font-size:14px}
+.tbl th{color:#0f172a;background:#f8fafc}
+.flex{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 @media (max-width: 760px){
   .grid{grid-template-columns:1fr}
   .row{grid-template-columns:1fr}
-  .alloc-row{grid-template-columns:1fr 1fr;gap:6px}
-  .alloc-row span.tag{grid-column:1 / -1}
 }
 </style>
 </head>
 <body>
-  <h1>Calcolatore Budget Mensile</h1>
+  <h1>Calcolatore Budget + Tracker Settimanale</h1>
   <div class="container">
+    <div class="card" style="margin-bottom:12px;">
+      <div class="flex">
+        <div style="flex:1 1 200px">
+          <label>Mese</label>
+          <input type="month" id="mese">
+        </div>
+        <div><small class="hint">Il mese selezionato determina le buste salvate e le spese del tracker.</small></div>
+      </div>
+    </div>
+
     <div class="grid">
       <!-- Entrate -->
       <div class="card" style="grid-column: span 6;">
@@ -64,7 +70,7 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
             <input type="number" id="risparmio" step="0.01" value="200" oninput="updateAll()">
           </div>
         </div>
-        <small class="hint">Inserisci qui lo stipendio netto del mese e quanto vuoi mettere da parte.</small>
+        <small class="hint">Inserisci lo stipendio netto del mese e quanto vuoi mettere da parte.</small>
       </div>
 
       <!-- Spese fisse -->
@@ -91,7 +97,7 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
             <input type="number" id="variabili" step="0.01" value="0" oninput="updateAll()">
           </div>
           <div style="display:flex;align-items:flex-end">
-            <button class="primary" id="calc" type="button" onclick="updateAll()">Calcola</button>
+            <button class="primary" type="button" onclick="updateAll()">Calcola e Salva</button>
           </div>
         </div>
       </div>
@@ -110,50 +116,57 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
       <!-- Allocazione residuo -->
       <div class="card" style="grid-column: span 12;">
         <h3>Dividi il residuo in “buste”</h3>
-        <div class="mode" style="margin-bottom:10px;">
-          <label><input type="radio" name="mode" value="percent" checked onchange="toggleMode();updateAll()"> Riparti a <b>percentuale</b></label>
-          <label><input type="radio" name="mode" value="euro" onchange="toggleMode();updateAll()"> Usa importi <b>fissi (€)</b></label>
-          <button class="link" id="resetDefault" type="button" onclick="resetDefault()">Ripristina default</button>
+        <div class="flex" style="margin-bottom:10px;">
+          <label><input type="radio" name="mode" value="percent" checked onchange="toggleMode();updateAll()"> Percentuale</label>
+          <label><input type="radio" name="mode" value="euro" onchange="toggleMode();updateAll()"> Importi fissi (€)</label>
+          <button type="button" onclick="resetDefault()">Ripristina default</button>
         </div>
 
         <!-- Percentuale -->
         <div id="box-percent">
-          <div class="alloc-row">
-            <span class="tag"><b>Spesa</b></span>
-            <input type="range" id="p_spesa" min="0" max="100" value="40" oninput="syncRange('spesa')">
-            <input type="number" id="n_spesa" min="0" max="100" value="40" oninput="syncNumber('spesa')">
+          <div class="row">
+            <div>
+              <label>Spesa (%)</label>
+              <input type="range" id="p_spesa" min="0" max="100" value="40" oninput="syncRange('spesa')">
+              <input type="number" id="n_spesa" min="0" max="100" value="40" oninput="syncNumber('spesa')">
+            </div>
+            <div>
+              <label>Divertimento (%)</label>
+              <input type="range" id="p_div" min="0" max="100" value="40" oninput="syncRange('div')">
+              <input type="number" id="n_div" min="0" max="100" value="40" oninput="syncNumber('div')">
+            </div>
           </div>
-          <div class="alloc-row">
-            <span class="tag"><b>Divertimento</b></span>
-            <input type="range" id="p_div" min="0" max="100" value="40" oninput="syncRange('div')">
-            <input type="number" id="n_div" min="0" max="100" value="40" oninput="syncNumber('div')">
+          <div class="row">
+            <div>
+              <label>Extra (%)</label>
+              <input type="range" id="p_extra" min="0" max="100" value="20" oninput="syncRange('extra')">
+              <input type="number" id="n_extra" min="0" max="100" value="20" oninput="syncNumber('extra')">
+            </div>
+            <div style="display:flex;align-items:end"><small class="hint" id="sumHint">Somma 100% (adesso 100%).</small></div>
           </div>
-          <div class="alloc-row">
-            <span class="tag"><b>Extra</b></span>
-            <input type="range" id="p_extra" min="0" max="100" value="20" oninput="syncRange('extra')">
-            <input type="number" id="n_extra" min="0" max="100" value="20" oninput="syncNumber('extra')">
-          </div>
-          <small class="hint" id="sumHint">La somma deve fare 100% (adesso 100%).</small>
         </div>
 
         <!-- Euro -->
         <div id="box-euro" style="display:none; margin-top:6px;">
-          <div class="alloc-row">
-            <span class="tag"><b>Spesa</b></span>
-            <div class="bar"><div id="bar_e_spesa" style="width:0%"></div></div>
-            <input type="number" id="e_spesa" step="0.01" value="0" oninput="updateAll()">
+          <div class="row">
+            <div>
+              <label>Spesa (€)</label>
+              <div class="progress"><div id="bar_e_spesa" style="width:0%"></div></div>
+              <input type="number" id="e_spesa" step="0.01" value="0" oninput="updateAll()">
+            </div>
+            <div>
+              <label>Divertimento (€)</label>
+              <div class="progress"><div id="bar_e_div" style="width:0%"></div></div>
+              <input type="number" id="e_div" step="0.01" value="0" oninput="updateAll()">
+            </div>
           </div>
-          <div class="alloc-row">
-            <span class="tag"><b>Divertimento</b></span>
-            <div class="bar"><div id="bar_e_div" style="width:0%"></div></div>
-            <input type="number" id="e_div" step="0.01" value="0" oninput="updateAll()">
+          <div class="row">
+            <div>
+              <label>Extra (€)</label>
+              <div class="progress"><div id="bar_e_extra" style="width:0%"></div></div>
+              <input type="number" id="e_extra" step="0.01" value="0" oninput="updateAll()">
+            </div>
           </div>
-          <div class="alloc-row">
-            <span class="tag"><b>Extra</b></span>
-            <div class="bar"><div id="bar_e_extra" style="width:0%"></div></div>
-            <input type="number" id="e_extra" step="0.01" value="0" oninput="updateAll()">
-          </div>
-          <small class="hint">Le barre mostrano quanto stai impegnando del residuo disponibile.</small>
         </div>
 
         <hr>
@@ -165,94 +178,162 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
           </div>
           <div>
             <div>Residuo dopo buste: <b id="out_residuo" class="ok">€ 0,00</b></div>
-            <div id="warn_deficit" class="bad" style="display:none;margin-top:6px;">Attenzione: hai allocato più del residuo. Riduci una o più buste.</div>
+            <div id="warn_deficit" class="bad" style="display:none;margin-top:6px;">Hai allocato più del residuo.</div>
           </div>
         </div>
       </div>
 
-    </div>
+      <!-- TRACKER SETTIMANALE -->
+      <div class="card" style="grid-column: span 12;">
+        <h3>Tracker settimanale (salvato in locale)</h3>
+        <small class="hint">Registra quanto spendi ogni settimana in <b>Spesa</b>, <b>Divertimento</b>, <b>Extra</b>. Il sistema confronta con il budget settimanale della busta per il mese selezionato.</small>
+        <hr>
+        <div class="row">
+          <div>
+            <label>Data</label>
+            <input type="date" id="t_data">
+          </div>
+          <div>
+            <label>Categoria</label>
+            <select id="t_cat">
+              <option>Spesa</option>
+              <option>Divertimento</option>
+              <option>Extra</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Importo (€)</label>
+            <input type="number" id="t_importo" step="0.01" placeholder="0.00">
+          </div>
+          <div style="display:flex;align-items:end;gap:8px;">
+            <button class="primary" type="button" onclick="addTxn()">Aggiungi spesa</button>
+            <button type="button" onclick="clearMonth()">Svuota mese</button>
+          </div>
+        </div>
 
-    <div class="footer-note">
-      I dati restano sul tuo dispositivo (salvati in locale). Cambia importi ogni mese e premi “Calcola”.
+        <hr>
+        <div class="kpi" id="wk_kpi"></div>
+
+        <div style="margin-top:8px;overflow:auto">
+          <table class="tbl" id="tbl_txn">
+            <thead><tr><th>Settimana</th><th>Data</th><th>Categoria</th><th>Importo</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
 <script>
-/* ===== helpers globali (niente eventi complicati: onclick/ oninput garantisce il calcolo) ===== */
-function euro(n){ return "€ " + Number(n||0).toFixed(2).replace(".",","); }
-function getN(id){
+/* ====== Utils ====== */
+const euro = n => "€ " + Number(n||0).toFixed(2).replace(".",",");
+const getN = id => {
   const el=document.getElementById(id);
-  if(!el) return 0;
-  const raw=(el.value||"").toString().replace(",",".");  // supporta 9,99
+  const raw=(el?.value||"").toString().replace(",",".");
   const v=parseFloat(raw);
   return isNaN(v)?0:v;
-}
-function setText(id,val){ document.getElementById(id).textContent = typeof val==="string" ? val : euro(val); }
+};
+const todayISO = ()=> new Date().toISOString().slice(0,10);
+const monthISO = d => d.slice(0,7);
+const daysInMonth=(y,m)=> new Date(y,m+1,0).getDate();
 
-/* ===== calcoli di base ===== */
-function calcolaBase(){
-  const entrate=getN("entrate");
-  const risparmio=getN("risparmio");
-  const fisse = getN("affitto")+getN("netflix")+getN("atm")+getN("youtube")+getN("spotify")+getN("prime")+getN("icloud")+getN("chatgpt");
-  const variabili=getN("variabili");
-  const residuo=entrate-(fisse+variabili+risparmio);
-  setText("k_fisse",fisse); setText("k_var",variabili); setText("k_save",risparmio); setText("k_residuo",residuo);
-  return {residuo};
+/* calcolo settimane del mese (lunedì-domenica che toccano il mese) */
+function monthWeeks(ym){ // ym = "YYYY-MM"
+  const [Y,M]=ym.split("-").map(Number); const y=Y, m=M-1;
+  const first = new Date(y,m,1);
+  const last  = new Date(y,m,daysInMonth(y,m));
+  const start = new Date(first);
+  start.setDate(first.getDate() - ((first.getDay()+6)%7)); // lunedì della settimana del 1°
+  const end = new Date(last);
+  end.setDate(last.getDate() + (7-((last.getDay()+6)%7)-1)); // domenica della settimana dell'ultimo
+  const out=[];
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+7)){
+    const s=new Date(d);
+    const e=new Date(d); e.setDate(e.getDate()+6);
+    out.push({start:s, end:e});
+  }
+  return out;
 }
-
-/* ===== modalità percentuale ===== */
-function syncRange(key){
-  document.getElementById("n_"+key).value = document.getElementById("p_"+key).value;
-  updateAll();
-}
-function syncNumber(key){
-  let v = Math.max(0, Math.min(100, getN("n_"+key)));
-  document.getElementById("n_"+key).value = v;
-  document.getElementById("p_"+key).value = v;
-  updateAll();
-}
-
-/* ===== modalità euro ===== */
-function updateEuro(residuo){
-  const tot=Math.max(0,residuo);
-  const s=getN("e_spesa"), d=getN("e_div"), e=getN("e_extra");
-  const sum=s+d+e, deficit=sum-tot;
-  const pct=x=> tot>0? Math.min(100, Math.round((x/tot)*100)) : 0;
-  document.getElementById("bar_e_spesa").style.width=pct(s)+"%";
-  document.getElementById("bar_e_div").style.width  =pct(d)+"%";
-  document.getElementById("bar_e_extra").style.width=pct(e)+"%";
-  setText("out_spesa",s); setText("out_div",d); setText("out_extra",e);
-  if(deficit>0){ setText("out_residuo",-deficit); document.getElementById("out_residuo").className="bad"; document.getElementById("warn_deficit").style.display="block"; }
-  else{ setText("out_residuo", tot - sum); document.getElementById("out_residuo").className="ok"; document.getElementById("warn_deficit").style.display="none"; }
+function weekIndexForDate(ym, dateStr){ // 1-based
+  const weeks=monthWeeks(ym);
+  const d=new Date(dateStr);
+  for(let i=0;i<weeks.length;i++){
+    if(d>=weeks[i].start && d<=weeks[i].end) return i+1;
+  }
+  return 1;
 }
 
-/* ===== toggle modalità ===== */
+/* ====== LocalStorage schema ======
+  Key: budget_alloc_<YYYY-MM> -> { spesa, div, extra }  (importi mensili allocati)
+  Key: budget_txn_<YYYY-MM>   -> [ {id, date, cat, amt} ]
+==================================== */
+
+function allocKey(m){ return "budget_alloc_"+m; }
+function txnKey(m){ return "budget_txn_"+m; }
+
+function saveAlloc(m, alloc){ localStorage.setItem(allocKey(m), JSON.stringify(alloc)); }
+function loadAlloc(m){ try{ return JSON.parse(localStorage.getItem(allocKey(m))||"{}"); }catch(e){return {};}}
+function loadTxn(m){ try{ return JSON.parse(localStorage.getItem(txnKey(m))||"[]"); }catch(e){return [];}}
+function saveTxn(m, arr){ localStorage.setItem(txnKey(m), JSON.stringify(arr)); }
+
+/* ====== UI: Calcolo buste ====== */
 function toggleMode(){
   const mode=document.querySelector('input[name="mode"]:checked').value;
   document.getElementById("box-percent").style.display = mode==="percent" ? "block" : "none";
   document.getElementById("box-euro").style.display    = mode==="euro"    ? "block" : "none";
 }
 
-/* ===== aggiorna tutto ===== */
-function updateAll(){
-  const {residuo}=calcolaBase();
-  const mode=document.querySelector('input[name="mode"]:checked').value;
-  if(mode==="percent"){
-    const p1=getN("p_spesa"), p2=getN("p_div"), p3=getN("p_extra");
-    const sum=p1+p2+p3;
-    document.getElementById("sumHint").textContent=`La somma deve fare 100% (adesso ${sum.toFixed(0)}%).`;
-    const w1=sum>0?p1/sum:0, w2=sum>0?p2/sum:0, w3=sum>0?p3/sum:0;
-    const a1=Math.max(0,residuo)*w1, a2=Math.max(0,residuo)*w2, a3=Math.max(0,residuo)*w3;
-    setText("out_spesa",a1); setText("out_div",a2); setText("out_extra",a3);
-    setText("out_residuo", residuo<0?residuo:0);
-    document.getElementById("out_residuo").className = residuo<0 ? "bad" : "ok";
-    document.getElementById("warn_deficit").style.display = residuo<0 ? "block" : "none";
-  }else{
-    updateEuro(residuo);
-  }
+function calcolaBase(){
+  const entrate=getN("entrate");
+  const risparmio=getN("risparmio");
+  const fisse = getN("affitto")+getN("netflix")+getN("atm")+getN("youtube")+getN("spotify")+getN("prime")+getN("icloud")+getN("chatgpt");
+  const variabili=getN("variabili");
+  const residuo=entrate-(fisse+variabili+risparmio);
+  document.getElementById("k_fisse").textContent  = euro(fisse);
+  document.getElementById("k_var").textContent    = euro(variabili);
+  document.getElementById("k_save").textContent   = euro(risparmio);
+  document.getElementById("k_residuo").textContent= euro(residuo);
+  return {residuo};
 }
 
-/* ===== reset rapido ===== */
+function updateAll(){
+  const m=document.getElementById("mese").value;
+  const {residuo}=calcolaBase();
+  const mode=document.querySelector('input[name="mode"]:checked').value;
+
+  let spesa=0,div=0,extra=0;
+  if(mode==="percent"){
+    const p1=getN("p_spesa"), p2=getN("p_div"), p3=getN("p_extra");
+    const sum = p1+p2+p3;
+    document.getElementById("sumHint").textContent = `Somma 100% (adesso ${sum.toFixed(0)}%).`;
+    const w1=sum>0?p1/sum:0, w2=sum>0?p2/sum:0, w3=sum>0?p3/sum:0;
+    spesa=Math.max(0,residuo)*w1; div=Math.max(0,residuo)*w2; extra=Math.max(0,residuo)*w3;
+  }else{
+    spesa=getN("e_spesa"); div=getN("e_div"); extra=getN("e_extra");
+    const tot=Math.max(0,residuo), sum=spesa+div+extra, deficit=sum-tot;
+    const pct=x=> tot>0? Math.min(100, Math.round((x/tot)*100)) : 0;
+    document.getElementById("bar_e_spesa").style.width=pct(spesa)+"%";
+    document.getElementById("bar_e_div").style.width  =pct(div)+"%";
+    document.getElementById("bar_e_extra").style.width=pct(extra)+"%";
+    if(deficit>0){ document.getElementById("out_residuo").textContent=euro(-deficit); document.getElementById("out_residuo").className="bad"; document.getElementById("warn_deficit").style.display="block"; }
+    else{ document.getElementById("out_residuo").textContent=euro(tot-sum); document.getElementById("out_residuo").className="ok"; document.getElementById("warn_deficit").style.display="none"; }
+  }
+  document.getElementById("out_spesa").textContent=euro(spesa);
+  document.getElementById("out_div").textContent  =euro(div);
+  document.getElementById("out_extra").textContent=euro(extra);
+
+  // salva allocazione del mese + aggiorna tracker
+  saveAlloc(m,{spesa,div,extra});
+  renderTracker();
+}
+
+function syncRange(k){ document.getElementById("n_"+k).value=document.getElementById("p_"+k).value; updateAll(); }
+function syncNumber(k){
+  let v = Math.max(0, Math.min(100, getN("n_"+k)));
+  document.getElementById("n_"+k).value=v; document.getElementById("p_"+k).value=v; updateAll();
+}
 function resetDefault(){
   const mode=document.querySelector('input[name="mode"]:checked').value;
   if(mode==="percent"){
@@ -267,8 +348,119 @@ function resetDefault(){
   updateAll();
 }
 
-/* primo calcolo all'apertura */
-window.onload = function(){ toggleMode(); updateAll(); };
+/* ====== Tracker: CRUD ====== */
+function addTxn(){
+  const m=document.getElementById("mese").value;
+  const d=document.getElementById("t_data").value || todayISO();
+  if(monthISO(d)!==m){ alert("La data non appartiene al mese selezionato."); return; }
+  const cat=document.getElementById("t_cat").value;
+  const amt=getN("t_importo");
+  if(!amt){ alert("Inserisci un importo valido."); return; }
+  const list=loadTxn(m);
+  const id=Date.now();
+  list.push({id,date:d,cat,amt});
+  list.sort((a,b)=> new Date(a.date)-new Date(b.date));
+  saveTxn(m,list);
+  document.getElementById("t_importo").value="";
+  renderTracker();
+}
+function delTxn(id){
+  const m=document.getElementById("mese").value;
+  let list=loadTxn(m);
+  list=list.filter(x=>x.id!==id);
+  saveTxn(m,list);
+  renderTracker();
+}
+function clearMonth(){
+  const m=document.getElementById("mese").value;
+  if(confirm("Sicuro di cancellare tutte le spese registrate per il mese "+m+"?")){
+    saveTxn(m,[]);
+    renderTracker();
+  }
+}
+
+/* ====== Tracker: render ====== */
+function renderTracker(){
+  const m=document.getElementById("mese").value;
+  const alloc=loadAlloc(m);
+  const list=loadTxn(m);
+  const weeks=monthWeeks(m);
+  const nowWeek = (()=>{ // settimana corrente (se il mese è futuro, 0)
+    const today=new Date(); const ymToday=today.toISOString().slice(0,7);
+    if(ymToday!==m) return weeks.length; // se non è il mese corrente mostriamo cumulo su tutto il mese
+    return weekIndexForDate(m,todayISO());
+  })();
+
+  // calcola budget settimanale per busta
+  const by = {
+    Spesa: {monthly:alloc.spesa||0},
+    Divertimento: {monthly:alloc.div||0},
+    Extra: {monthly:alloc.extra||0},
+  };
+  const nWeeks=weeks.length;
+  for(const k in by){ by[k].perWeek = (by[k].monthly||0)/nWeeks; }
+
+  // speso cumulato per categoria fino a settimana corrente
+  const spentToWeek = {Spesa:0, Divertimento:0, Extra:0};
+  list.forEach(t=>{
+    const w=weekIndexForDate(m, t.date);
+    if(w<=nowWeek) spentToWeek[t.cat]+= Number(t.amt||0);
+  });
+
+  // KPI settimanali
+  const kpi=document.getElementById("wk_kpi");
+  kpi.innerHTML="";
+  ["Spesa","Divertimento","Extra"].forEach(cat=>{
+    const allowed = by[cat].perWeek * nowWeek;
+    const diff = allowed - spentToWeek[cat];
+    const cls = diff>=0? "ok":"bad";
+    const pctBase = by[cat].monthly>0 ? Math.min(100, Math.round((spentToWeek[cat]/by[cat].monthly)*100)) : 0;
+    kpi.insertAdjacentHTML("beforeend", `
+      <div class="pill" style="min-width:220px">
+        <div style="font-weight:700">${cat}</div>
+        <div style="font-size:12px;color:#64748b">Mese: ${euro(by[cat].monthly)} · ${nWeeks} sett. · /sett: ${euro(by[cat].perWeek)}</div>
+        <div style="margin-top:6px" class="progress"><div style="width:${pctBase}%"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:13px">
+          <span>Speso finora: <b>${euro(spentToWeek[cat])}</b></span>
+          <span>Potevi: <b>${euro(allowed)}</b></span>
+        </div>
+        <div class="${cls}" style="margin-top:4px">Scostamento: <b>${euro(diff)}</b></div>
+      </div>
+    `);
+  });
+
+  // tabella movimenti
+  const tbody=document.querySelector("#tbl_txn tbody");
+  tbody.innerHTML="";
+  list.forEach(t=>{
+    const w=weekIndexForDate(m,t.date);
+    tbody.insertAdjacentHTML("beforeend",
+      `<tr>
+        <td>Sett. ${w}</td>
+        <td>${t.date}</td>
+        <td>${t.cat}</td>
+        <td>${euro(t.amt)}</td>
+        <td><button onclick="delTxn(${t.id})">✕</button></td>
+      </tr>`);
+  });
+}
+
+/* ====== Boot ====== */
+(function init(){
+  // mese di default = mese corrente
+  const today = todayISO();
+  const m = monthISO(today);
+  document.getElementById("mese").value = m;
+  document.getElementById("t_data").value = today;
+  toggleMode();
+  updateAll();        // calcola e salva allocazione iniziale
+  renderTracker();    // mostra tracker del mese scelto
+  document.getElementById("mese").addEventListener("change", ()=>{
+    document.getElementById("t_data").value = todayISO();
+    // ricalcola KPI con alloc salvata del nuovo mese (se non c'è, resta 0)
+    renderTracker();
+  });
+})();
 </script>
 </body>
 </html>
