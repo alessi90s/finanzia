@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Calcolatore Budget Mensile + Tracker Settimanale</title>
+<title>Calcolatore Budget + Tracker Settimanale</title>
 <style>
 :root{
   --ink:#1e293b; --muted:#64748b; --ok:#16a34a; --bad:#b91c1c; --accent:#4a67d6;
@@ -46,13 +46,36 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
 <body>
   <h1>Calcolatore Budget + Tracker Settimanale</h1>
   <div class="container">
-    <div class="card" style="margin-bottom:12px;">
-      <div class="flex">
-        <div style="flex:1 1 200px">
-          <label>Mese</label>
-          <input type="month" id="mese">
+
+    <!-- Mese + saldi -->
+    <div class="grid">
+      <div class="card" style="grid-column: span 6;">
+        <h3>Mese</h3>
+        <div class="row">
+          <div>
+            <label>Mese di lavoro</label>
+            <input type="month" id="mese">
+          </div>
+          <div>
+            <label>Saldo iniziale conto (€)</label>
+            <input type="number" id="saldo_iniziale" step="0.01" value="196" oninput="updateAll()">
+            <small class="hint">Calcolo: 318 - 122 = 196</small>
+          </div>
         </div>
-        <div><small class="hint">Il mese selezionato determina le buste salvate e le spese del tracker.</small></div>
+      </div>
+      <div class="card" style="grid-column: span 6;">
+        <h3>Risparmi</h3>
+        <div class="row">
+          <div>
+            <label>Risparmi accantonati (€)</label>
+            <input type="number" id="risparmi" step="0.01" value="3500">
+          </div>
+          <div>
+            <label>Saldo fine mese (proiezione)</label>
+            <input type="text" id="saldo_fine" readonly>
+          </div>
+        </div>
+        <small class="hint">I risparmi non vengono usati per le spese correnti: sono mostrati solo per completezza.</small>
       </div>
     </div>
 
@@ -75,7 +98,7 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
 
       <!-- Spese fisse -->
       <div class="card" style="grid-column: span 6;">
-        <h3>Spese fisse</h3>
+        <h3>Spese fisse (mensili)</h3>
         <div class="row">
           <div>
             <label>Affitto</label><input type="number" id="affitto" step="0.01" value="680" oninput="updateAll()">
@@ -90,14 +113,23 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
             <label>ChatGPT</label><input type="number" id="chatgpt" step="0.01" value="23" oninput="updateAll()">
           </div>
         </div>
-        <hr>
         <div class="row">
+          <div>
+            <label>iPad (rata mensile)</label>
+            <input type="number" id="ipad" step="0.01" value="38.28" oninput="updateAll()">
+          </div>
           <div>
             <label>Spese variabili (cibo, benzina…)</label>
             <input type="number" id="variabili" step="0.01" value="0" oninput="updateAll()">
           </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div>
+            <small class="hint">Rate programmate automatiche: +83 € a <b>Novembre</b> e +83 € a <b>Dicembre</b> (calcolate in base al mese selezionato).</small>
+          </div>
           <div style="display:flex;align-items:flex-end">
-            <button class="primary" type="button" onclick="updateAll()">Calcola e Salva</button>
+            <button class="primary" type="button" onclick="updateAll()">Calcola & Salva</button>
           </div>
         </div>
       </div>
@@ -109,6 +141,7 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
           <div class="pill"><div>Spese fisse</div><div class="v" id="k_fisse">€ 0,00</div></div>
           <div class="pill"><div>Spese variabili</div><div class="v" id="k_var">€ 0,00</div></div>
           <div class="pill"><div>Risparmio</div><div class="v" id="k_save">€ 0,00</div></div>
+          <div class="pill"><div>Rate mese</div><div class="v" id="k_rate">€ 0,00</div></div>
           <div class="pill"><div>Residuo disponibile</div><div class="v" id="k_residuo">€ 0,00</div></div>
         </div>
       </div>
@@ -186,7 +219,7 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
       <!-- TRACKER SETTIMANALE -->
       <div class="card" style="grid-column: span 12;">
         <h3>Tracker settimanale (salvato in locale)</h3>
-        <small class="hint">Registra quanto spendi ogni settimana in <b>Spesa</b>, <b>Divertimento</b>, <b>Extra</b>. Il sistema confronta con il budget settimanale della busta per il mese selezionato.</small>
+        <small class="hint">Registra quanto spendi ogni settimana in <b>Spesa</b>, <b>Divertimento</b>, <b>Extra</b>. Confronto con budget settimanale della busta per il mese selezionato.</small>
         <hr>
         <div class="row">
           <div>
@@ -239,46 +272,41 @@ const todayISO = ()=> new Date().toISOString().slice(0,10);
 const monthISO = d => d.slice(0,7);
 const daysInMonth=(y,m)=> new Date(y,m+1,0).getDate();
 
-/* calcolo settimane del mese (lunedì-domenica che toccano il mese) */
-function monthWeeks(ym){ // ym = "YYYY-MM"
+/* settimane del mese (lun-dom) */
+function monthWeeks(ym){
   const [Y,M]=ym.split("-").map(Number); const y=Y, m=M-1;
   const first = new Date(y,m,1);
   const last  = new Date(y,m,daysInMonth(y,m));
-  const start = new Date(first);
-  start.setDate(first.getDate() - ((first.getDay()+6)%7)); // lunedì della settimana del 1°
-  const end = new Date(last);
-  end.setDate(last.getDate() + (7-((last.getDay()+6)%7)-1)); // domenica della settimana dell'ultimo
+  const start = new Date(first); start.setDate(first.getDate() - ((first.getDay()+6)%7));
+  const end = new Date(last);   end.setDate(last.getDate() + (7-((last.getDay()+6)%7)-1));
   const out=[];
   for(let d=new Date(start); d<=end; d.setDate(d.getDate()+7)){
-    const s=new Date(d);
-    const e=new Date(d); e.setDate(e.getDate()+6);
-    out.push({start:s, end:e});
+    const s=new Date(d), e=new Date(d); e.setDate(e.getDate()+6);
+    out.push({start:s,end:e});
   }
   return out;
 }
-function weekIndexForDate(ym, dateStr){ // 1-based
-  const weeks=monthWeeks(ym);
-  const d=new Date(dateStr);
-  for(let i=0;i<weeks.length;i++){
-    if(d>=weeks[i].start && d<=weeks[i].end) return i+1;
-  }
+function weekIndexForDate(ym, dateStr){
+  const weeks=monthWeeks(ym); const d=new Date(dateStr);
+  for(let i=0;i<weeks.length;i++) if(d>=weeks[i].start && d<=weeks[i].end) return i+1;
   return 1;
 }
 
-/* ====== LocalStorage schema ======
-  Key: budget_alloc_<YYYY-MM> -> { spesa, div, extra }  (importi mensili allocati)
-  Key: budget_txn_<YYYY-MM>   -> [ {id, date, cat, amt} ]
-==================================== */
-
+/* ==== LocalStorage ==== */
 function allocKey(m){ return "budget_alloc_"+m; }
 function txnKey(m){ return "budget_txn_"+m; }
-
 function saveAlloc(m, alloc){ localStorage.setItem(allocKey(m), JSON.stringify(alloc)); }
 function loadAlloc(m){ try{ return JSON.parse(localStorage.getItem(allocKey(m))||"{}"); }catch(e){return {};}}
 function loadTxn(m){ try{ return JSON.parse(localStorage.getItem(txnKey(m))||"[]"); }catch(e){return [];}}
 function saveTxn(m, arr){ localStorage.setItem(txnKey(m), JSON.stringify(arr)); }
 
-/* ====== UI: Calcolo buste ====== */
+/* ==== rate programmate per mese ==== */
+function extraRateForMonth(ym){
+  // +83 a novembre e +83 a dicembre
+  return (/-11$/.test(ym) || /-12$/.test(ym)) ? 83 : 0;
+}
+
+/* ==== UI: buste e KPI ==== */
 function toggleMode(){
   const mode=document.querySelector('input[name="mode"]:checked').value;
   document.getElementById("box-percent").style.display = mode==="percent" ? "block" : "none";
@@ -286,21 +314,30 @@ function toggleMode(){
 }
 
 function calcolaBase(){
-  const entrate=getN("entrate");
-  const risparmio=getN("risparmio");
-  const fisse = getN("affitto")+getN("netflix")+getN("atm")+getN("youtube")+getN("spotify")+getN("prime")+getN("icloud")+getN("chatgpt");
+  const m = document.getElementById("mese").value;
+  const saldoIni = getN("saldo_iniziale");
+  const entrate  = getN("entrate");
+  const risparmio= getN("risparmio");
+  const fisse = getN("affitto")+getN("netflix")+getN("atm")+getN("youtube")+getN("spotify")+getN("prime")+getN("icloud")+getN("chatgpt")+getN("ipad");
   const variabili=getN("variabili");
-  const residuo=entrate-(fisse+variabili+risparmio);
-  document.getElementById("k_fisse").textContent  = euro(fisse);
-  document.getElementById("k_var").textContent    = euro(variabili);
-  document.getElementById("k_save").textContent   = euro(risparmio);
-  document.getElementById("k_residuo").textContent= euro(residuo);
-  return {residuo};
+  const rateMese = extraRateForMonth(m);
+
+  const residuo = entrate - (fisse + variabili + risparmio + rateMese);
+  const saldoFine = saldoIni + residuo;
+
+  document.getElementById("k_fisse").textContent   = euro(fisse);
+  document.getElementById("k_var").textContent     = euro(variabili);
+  document.getElementById("k_save").textContent    = euro(risparmio);
+  document.getElementById("k_rate").textContent    = euro(rateMese);
+  document.getElementById("k_residuo").textContent = euro(residuo);
+  document.getElementById("saldo_fine").value      = euro(saldoFine);
+
+  return {residuo, rateMese};
 }
 
 function updateAll(){
   const m=document.getElementById("mese").value;
-  const {residuo}=calcolaBase();
+  const {residuo} = calcolaBase();
   const mode=document.querySelector('input[name="mode"]:checked').value;
 
   let spesa=0,div=0,extra=0;
@@ -324,11 +361,12 @@ function updateAll(){
   document.getElementById("out_div").textContent  =euro(div);
   document.getElementById("out_extra").textContent=euro(extra);
 
-  // salva allocazione del mese + aggiorna tracker
+  // salva allocazione del mese per tracker
   saveAlloc(m,{spesa,div,extra});
   renderTracker();
 }
 
+/* allocazione – helpers */
 function syncRange(k){ document.getElementById("n_"+k).value=document.getElementById("p_"+k).value; updateAll(); }
 function syncNumber(k){
   let v = Math.max(0, Math.min(100, getN("n_"+k)));
@@ -348,7 +386,7 @@ function resetDefault(){
   updateAll();
 }
 
-/* ====== Tracker: CRUD ====== */
+/* ====== Tracker ====== */
 function addTxn(){
   const m=document.getElementById("mese").value;
   const d=document.getElementById("t_data").value || todayISO();
@@ -366,32 +404,26 @@ function addTxn(){
 }
 function delTxn(id){
   const m=document.getElementById("mese").value;
-  let list=loadTxn(m);
-  list=list.filter(x=>x.id!==id);
+  let list=loadTxn(m).filter(x=>x.id!==id);
   saveTxn(m,list);
   renderTracker();
 }
 function clearMonth(){
   const m=document.getElementById("mese").value;
-  if(confirm("Sicuro di cancellare tutte le spese registrate per il mese "+m+"?")){
+  if(confirm("Sicuro di cancellare tutte le spese registrate per "+m+"?")){
     saveTxn(m,[]);
     renderTracker();
   }
 }
 
-/* ====== Tracker: render ====== */
 function renderTracker(){
   const m=document.getElementById("mese").value;
   const alloc=loadAlloc(m);
   const list=loadTxn(m);
   const weeks=monthWeeks(m);
-  const nowWeek = (()=>{ // settimana corrente (se il mese è futuro, 0)
-    const today=new Date(); const ymToday=today.toISOString().slice(0,7);
-    if(ymToday!==m) return weeks.length; // se non è il mese corrente mostriamo cumulo su tutto il mese
-    return weekIndexForDate(m,todayISO());
-  })();
+  const today=new Date(), ymToday=today.toISOString().slice(0,7);
+  const nowWeek = (ymToday!==m)? weeks.length : weekIndexForDate(m, todayISO());
 
-  // calcola budget settimanale per busta
   const by = {
     Spesa: {monthly:alloc.spesa||0},
     Divertimento: {monthly:alloc.div||0},
@@ -400,16 +432,10 @@ function renderTracker(){
   const nWeeks=weeks.length;
   for(const k in by){ by[k].perWeek = (by[k].monthly||0)/nWeeks; }
 
-  // speso cumulato per categoria fino a settimana corrente
   const spentToWeek = {Spesa:0, Divertimento:0, Extra:0};
-  list.forEach(t=>{
-    const w=weekIndexForDate(m, t.date);
-    if(w<=nowWeek) spentToWeek[t.cat]+= Number(t.amt||0);
-  });
+  list.forEach(t=>{ const w=weekIndexForDate(m,t.date); if(w<=nowWeek) spentToWeek[t.cat]+= Number(t.amt||0); });
 
-  // KPI settimanali
-  const kpi=document.getElementById("wk_kpi");
-  kpi.innerHTML="";
+  const kpi=document.getElementById("wk_kpi"); kpi.innerHTML="";
   ["Spesa","Divertimento","Extra"].forEach(cat=>{
     const allowed = by[cat].perWeek * nowWeek;
     const diff = allowed - spentToWeek[cat];
@@ -429,9 +455,7 @@ function renderTracker(){
     `);
   });
 
-  // tabella movimenti
-  const tbody=document.querySelector("#tbl_txn tbody");
-  tbody.innerHTML="";
+  const tbody=document.querySelector("#tbl_txn tbody"); tbody.innerHTML="";
   list.forEach(t=>{
     const w=weekIndexForDate(m,t.date);
     tbody.insertAdjacentHTML("beforeend",
@@ -445,19 +469,18 @@ function renderTracker(){
   });
 }
 
-/* ====== Boot ====== */
+/* ==== Boot ==== */
 (function init(){
-  // mese di default = mese corrente
   const today = todayISO();
   const m = monthISO(today);
   document.getElementById("mese").value = m;
   document.getElementById("t_data").value = today;
   toggleMode();
-  updateAll();        // calcola e salva allocazione iniziale
-  renderTracker();    // mostra tracker del mese scelto
+  updateAll();
+  renderTracker();
   document.getElementById("mese").addEventListener("change", ()=>{
     document.getElementById("t_data").value = todayISO();
-    // ricalcola KPI con alloc salvata del nuovo mese (se non c'è, resta 0)
+    updateAll();
     renderTracker();
   });
 })();
