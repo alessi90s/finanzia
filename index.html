@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<title>Calcolatore Budget Mensile con Buste</title>
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calcolatore Budget Mensile con Buste</title>
 <style>
 :root{
   --ink:#1e293b; --muted:#64748b; --ok:#16a34a; --bad:#b91c1c; --accent:#4a67d6;
@@ -20,6 +20,7 @@ h1{text-align:center;margin-top:18px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 label{font-size:13px;color:var(--muted)}
 input[type="number"]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
+input[type="text"]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
 select,button{padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px}
 button.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;cursor:pointer}
 button.link{background:transparent;border:none;color:var(--accent);cursor:pointer;padding:0}
@@ -56,49 +57,41 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
         <div class="row">
           <div>
             <label>Entrate totali (€)</label>
-            <input type="number" id="entrate" step="0.01" value="1681">
+            <input type="number" id="entrate" step="0.01" value="1681" oninput="updateAll()">
           </div>
           <div>
             <label>Risparmio obiettivo (€)</label>
-            <input type="number" id="risparmio" step="0.01" value="200">
+            <input type="number" id="risparmio" step="0.01" value="200" oninput="updateAll()">
           </div>
         </div>
-        <small class="hint">Inserisci qui lo stipendio netto di questo mese e quanto vuoi mettere da parte.</small>
+        <small class="hint">Inserisci qui lo stipendio netto del mese e quanto vuoi mettere da parte.</small>
       </div>
 
-      <!-- Spese fisse (prefill con i tuoi valori) -->
+      <!-- Spese fisse -->
       <div class="card" style="grid-column: span 6;">
         <h3>Spese fisse</h3>
         <div class="row">
           <div>
-            <label>Affitto</label>
-            <input type="number" id="affitto" step="0.01" value="680">
-            <label>Netflix</label>
-            <input type="number" id="netflix" step="0.01" value="7">
-            <label>ATM</label>
-            <input type="number" id="atm" step="0.01" value="39">
-            <label>YouTube</label>
-            <input type="number" id="youtube" step="0.01" value="9.99">
+            <label>Affitto</label><input type="number" id="affitto" step="0.01" value="680" oninput="updateAll()">
+            <label>Netflix</label><input type="number" id="netflix" step="0.01" value="7" oninput="updateAll()">
+            <label>ATM</label><input type="number" id="atm" step="0.01" value="39" oninput="updateAll()">
+            <label>YouTube</label><input type="text" id="youtube" value="9,99" oninput="updateAll()">
           </div>
           <div>
-            <label>Spotify</label>
-            <input type="number" id="spotify" step="0.01" value="21">
-            <label>Prime (AD+Std)</label>
-            <input type="number" id="prime" step="0.01" value="7">
-            <label>iCloud</label>
-            <input type="number" id="icloud" step="0.01" value="10">
-            <label>ChatGPT</label>
-            <input type="number" id="chatgpt" step="0.01" value="23">
+            <label>Spotify</label><input type="number" id="spotify" step="0.01" value="21" oninput="updateAll()">
+            <label>Prime (AD+Std)</label><input type="number" id="prime" step="0.01" value="7" oninput="updateAll()">
+            <label>iCloud</label><input type="number" id="icloud" step="0.01" value="10" oninput="updateAll()">
+            <label>ChatGPT</label><input type="number" id="chatgpt" step="0.01" value="23" oninput="updateAll()">
           </div>
         </div>
         <hr>
         <div class="row">
           <div>
             <label>Spese variabili (cibo, benzina…)</label>
-            <input type="number" id="variabili" step="0.01" value="0">
+            <input type="number" id="variabili" step="0.01" value="0" oninput="updateAll()">
           </div>
           <div style="display:flex;align-items:flex-end">
-            <button class="primary" id="calc">Calcola</button>
+            <button class="primary" id="calc" type="button" onclick="updateAll()">Calcola</button>
           </div>
         </div>
       </div>
@@ -107,22 +100,10 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
       <div class="card" style="grid-column: span 12;">
         <h3>Riepilogo</h3>
         <div class="kpi">
-          <div class="pill">
-            <div>Spese fisse</div>
-            <div class="v" id="k_fisse">€ 0</div>
-          </div>
-          <div class="pill">
-            <div>Spese variabili</div>
-            <div class="v" id="k_var">€ 0</div>
-          </div>
-          <div class="pill">
-            <div>Risparmio</div>
-            <div class="v" id="k_save">€ 0</div>
-          </div>
-          <div class="pill">
-            <div>Residuo disponibile</div>
-            <div class="v" id="k_residuo">€ 0</div>
-          </div>
+          <div class="pill"><div>Spese fisse</div><div class="v" id="k_fisse">€ 0,00</div></div>
+          <div class="pill"><div>Spese variabili</div><div class="v" id="k_var">€ 0,00</div></div>
+          <div class="pill"><div>Risparmio</div><div class="v" id="k_save">€ 0,00</div></div>
+          <div class="pill"><div>Residuo disponibile</div><div class="v" id="k_residuo">€ 0,00</div></div>
         </div>
       </div>
 
@@ -130,9 +111,9 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
       <div class="card" style="grid-column: span 12;">
         <h3>Dividi il residuo in “buste”</h3>
         <div class="mode" style="margin-bottom:10px;">
-          <label><input type="radio" name="mode" value="percent" checked> Riparti a <b>percentuale</b></label>
-          <label><input type="radio" name="mode" value="euro"> Usa importi <b>fissi (€)</b></label>
-          <button class="link" id="resetDefault" title="Ripristina 40/40/20 o € 0">Ripristina default</button>
+          <label><input type="radio" name="mode" value="percent" checked onchange="toggleMode();updateAll()"> Riparti a <b>percentuale</b></label>
+          <label><input type="radio" name="mode" value="euro" onchange="toggleMode();updateAll()"> Usa importi <b>fissi (€)</b></label>
+          <button class="link" id="resetDefault" type="button" onclick="resetDefault()">Ripristina default</button>
         </div>
 
         <!-- Percentuale -->
@@ -160,17 +141,17 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
           <div class="alloc-row">
             <span class="tag"><b>Spesa</b></span>
             <div class="bar"><div id="bar_e_spesa" style="width:0%"></div></div>
-            <input type="number" id="e_spesa" step="0.01" value="0">
+            <input type="number" id="e_spesa" step="0.01" value="0" oninput="updateAll()">
           </div>
           <div class="alloc-row">
             <span class="tag"><b>Divertimento</b></span>
             <div class="bar"><div id="bar_e_div" style="width:0%"></div></div>
-            <input type="number" id="e_div" step="0.01" value="0">
+            <input type="number" id="e_div" step="0.01" value="0" oninput="updateAll()">
           </div>
           <div class="alloc-row">
             <span class="tag"><b>Extra</b></span>
             <div class="bar"><div id="bar_e_extra" style="width:0%"></div></div>
-            <input type="number" id="e_extra" step="0.01" value="0">
+            <input type="number" id="e_extra" step="0.01" value="0" oninput="updateAll()">
           </div>
           <small class="hint">Le barre mostrano quanto stai impegnando del residuo disponibile.</small>
         </div>
@@ -178,12 +159,12 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
         <hr>
         <div class="row">
           <div>
-            <div><span class="badge neutral">Spesa</span> <b id="out_spesa">€ 0</b></div>
-            <div><span class="badge neutral">Divertimento</span> <b id="out_div">€ 0</b></div>
-            <div><span class="badge neutral">Extra</span> <b id="out_extra">€ 0</b></div>
+            <div><span class="badge neutral">Spesa</span> <b id="out_spesa">€ 0,00</b></div>
+            <div><span class="badge neutral">Divertimento</span> <b id="out_div">€ 0,00</b></div>
+            <div><span class="badge neutral">Extra</span> <b id="out_extra">€ 0,00</b></div>
           </div>
           <div>
-            <div>Residuo dopo buste: <b id="out_residuo" class="ok">€ 0</b></div>
+            <div>Residuo dopo buste: <b id="out_residuo" class="ok">€ 0,00</b></div>
             <div id="warn_deficit" class="bad" style="display:none;margin-top:6px;">Attenzione: hai allocato più del residuo. Riduci una o più buste.</div>
           </div>
         </div>
@@ -197,156 +178,97 @@ hr{border:none;border-top:1px dashed var(--line);margin:10px 0}
   </div>
 
 <script>
-/* ------- helpers ------- */
-const € = (n)=> `€ ${Number(n||0).toFixed(2).replace('.',',')}`;
-const getN = (id)=> parseFloat(document.getElementById(id).value.replace(',','.')) || 0;
-const setText = (id,val)=> document.getElementById(id).textContent = typeof val==='string'? val : €(val);
-
-/* ------- localStorage (autosave) ------- */
-const LS_KEY='budget_state_v1';
-function saveState(){
-  const ids=['entrate','risparmio','affitto','netflix','atm','youtube','spotify','prime','icloud','chatgpt','variabili',
-             'p_spesa','p_div','p_extra','n_spesa','n_div','n_extra','e_spesa','e_div','e_extra','mode'];
-  const st={};
-  ids.forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el) return;
-    st[id]= (el.type==='radio') ? (el.checked?el.value:null) : el.value;
-  });
-  // mode
-  st.mode = document.querySelector('input[name="mode"]:checked').value;
-  localStorage.setItem(LS_KEY, JSON.stringify(st));
+/* ===== helpers globali (niente eventi complicati: onclick/ oninput garantisce il calcolo) ===== */
+function euro(n){ return "€ " + Number(n||0).toFixed(2).replace(".",","); }
+function getN(id){
+  const el=document.getElementById(id);
+  if(!el) return 0;
+  const raw=(el.value||"").toString().replace(",",".");  // supporta 9,99
+  const v=parseFloat(raw);
+  return isNaN(v)?0:v;
 }
-function loadState(){
-  try{
-    const st=JSON.parse(localStorage.getItem(LS_KEY)||'{}');
-    for(const k in st){
-      const el=document.getElementById(k);
-      if(!el) continue;
-      if(k==='mode'){
-        document.querySelector(`input[name="mode"][value="${st[k]}"]`).checked=true;
-      }else{
-        el.value = st[k];
-      }
-    }
-    toggleMode();
-  }catch(e){}
-}
+function setText(id,val){ document.getElementById(id).textContent = typeof val==="string" ? val : euro(val); }
 
-/* ------- calcolo base ------- */
+/* ===== calcoli di base ===== */
 function calcolaBase(){
-  const entrate  = getN('entrate');
-  const risparmio= getN('risparmio');
-  const fisse = getN('affitto') + getN('netflix') + getN('atm') + getN('youtube') +
-                getN('spotify') + getN('prime') + getN('icloud') + getN('chatgpt');
-  const variabili = getN('variabili');
-  const residuo = entrate - (fisse + variabili + risparmio);
-
-  setText('k_fisse', fisse);
-  setText('k_var', variabili);
-  setText('k_save', risparmio);
-  setText('k_residuo', residuo);
-  return {entrate, fisse, variabili, risparmio, residuo};
+  const entrate=getN("entrate");
+  const risparmio=getN("risparmio");
+  const fisse = getN("affitto")+getN("netflix")+getN("atm")+getN("youtube")+getN("spotify")+getN("prime")+getN("icloud")+getN("chatgpt");
+  const variabili=getN("variabili");
+  const residuo=entrate-(fisse+variabili+risparmio);
+  setText("k_fisse",fisse); setText("k_var",variabili); setText("k_save",risparmio); setText("k_residuo",residuo);
+  return {residuo};
 }
 
-/* ------- modalità percentuale ------- */
+/* ===== modalità percentuale ===== */
 function syncRange(key){
-  // quando muovi lo slider, copia nel numero
-  const pId = {spesa:'p_spesa', div:'p_div', extra:'p_extra'}[key];
-  const nId = {spesa:'n_spesa', div:'n_div', extra:'n_extra'}[key];
-  document.getElementById(nId).value = document.getElementById(pId).value;
+  document.getElementById("n_"+key).value = document.getElementById("p_"+key).value;
   updateAll();
 }
 function syncNumber(key){
-  // quando digiti il numero, copia nello slider
-  const pId = {spesa:'p_spesa', div:'p_div', extra:'p_extra'}[key];
-  const nId = {spesa:'n_spesa', div:'n_div', extra:'n_extra'}[key];
-  let v = Math.max(0, Math.min(100, parseFloat(document.getElementById(nId).value)||0));
-  document.getElementById(nId).value = v;
-  document.getElementById(pId).value = v;
+  let v = Math.max(0, Math.min(100, getN("n_"+key)));
+  document.getElementById("n_"+key).value = v;
+  document.getElementById("p_"+key).value = v;
   updateAll();
 }
 
-/* ------- modalità euro ------- */
-function barsEuro(residuo){
-  const tot = Math.max(0, residuo);
-  const s = getN('e_spesa'), d = getN('e_div'), e = getN('e_extra');
-  const sum = s+d+e;
-  const pct = (x)=> tot>0? Math.min(100, Math.round((x/tot)*100)) : 0;
-  document.getElementById('bar_e_spesa').style.width = pct(s)+'%';
-  document.getElementById('bar_e_div').style.width   = pct(d)+'%';
-  document.getElementById('bar_e_extra').style.width = pct(e)+'%';
-  const deficit = sum - tot;
-  const warn = document.getElementById('warn_deficit');
-  if(deficit>0){ warn.style.display='block'; setText('out_residuo', -deficit); document.getElementById('out_residuo').className='bad'; }
-  else{ warn.style.display='none'; setText('out_residuo', tot - sum); document.getElementById('out_residuo').className='ok'; }
-  setText('out_spesa', s);
-  setText('out_div', d);
-  setText('out_extra', e);
+/* ===== modalità euro ===== */
+function updateEuro(residuo){
+  const tot=Math.max(0,residuo);
+  const s=getN("e_spesa"), d=getN("e_div"), e=getN("e_extra");
+  const sum=s+d+e, deficit=sum-tot;
+  const pct=x=> tot>0? Math.min(100, Math.round((x/tot)*100)) : 0;
+  document.getElementById("bar_e_spesa").style.width=pct(s)+"%";
+  document.getElementById("bar_e_div").style.width  =pct(d)+"%";
+  document.getElementById("bar_e_extra").style.width=pct(e)+"%";
+  setText("out_spesa",s); setText("out_div",d); setText("out_extra",e);
+  if(deficit>0){ setText("out_residuo",-deficit); document.getElementById("out_residuo").className="bad"; document.getElementById("warn_deficit").style.display="block"; }
+  else{ setText("out_residuo", tot - sum); document.getElementById("out_residuo").className="ok"; document.getElementById("warn_deficit").style.display="none"; }
 }
 
-/* ------- toggle modalità ------- */
+/* ===== toggle modalità ===== */
 function toggleMode(){
-  const mode = document.querySelector('input[name="mode"]:checked').value;
-  document.getElementById('box-percent').style.display = mode==='percent' ? 'block':'none';
-  document.getElementById('box-euro').style.display    = mode==='euro'    ? 'block':'none';
+  const mode=document.querySelector('input[name="mode"]:checked').value;
+  document.getElementById("box-percent").style.display = mode==="percent" ? "block" : "none";
+  document.getElementById("box-euro").style.display    = mode==="euro"    ? "block" : "none";
 }
 
-/* ------- aggiornamento completo ------- */
+/* ===== aggiorna tutto ===== */
 function updateAll(){
-  const {residuo} = calcolaBase();
-  const mode = document.querySelector('input[name="mode"]:checked').value;
-
-  if(mode==='percent'){
-    const p1 = getN('p_spesa'), p2 = getN('p_div'), p3 = getN('p_extra');
-    const sum = p1 + p2 + p3;
-    document.getElementById('sumHint').textContent = `La somma deve fare 100% (adesso ${sum.toFixed(0)}%).`;
-    // normalizza se non è 100 (evita buchi / eccedenze)
-    const w1 = sum>0 ? p1/sum : 0, w2 = sum>0 ? p2/sum : 0, w3 = sum>0 ? p3/sum : 0;
-    const a_spesa = Math.max(0, residuo) * w1;
-    const a_div   = Math.max(0, residuo) * w2;
-    const a_extra = Math.max(0, residuo) * w3;
-    setText('out_spesa', a_spesa);
-    setText('out_div',   a_div);
-    setText('out_extra', a_extra);
-    setText('out_residuo', residuo<0 ? residuo : 0);
-    document.getElementById('out_residuo').className = residuo<0 ? 'bad':'ok';
-    document.getElementById('warn_deficit').style.display = residuo<0 ? 'block':'none';
-  } else {
-    barsEuro(residuo);
+  const {residuo}=calcolaBase();
+  const mode=document.querySelector('input[name="mode"]:checked').value;
+  if(mode==="percent"){
+    const p1=getN("p_spesa"), p2=getN("p_div"), p3=getN("p_extra");
+    const sum=p1+p2+p3;
+    document.getElementById("sumHint").textContent=`La somma deve fare 100% (adesso ${sum.toFixed(0)}%).`;
+    const w1=sum>0?p1/sum:0, w2=sum>0?p2/sum:0, w3=sum>0?p3/sum:0;
+    const a1=Math.max(0,residuo)*w1, a2=Math.max(0,residuo)*w2, a3=Math.max(0,residuo)*w3;
+    setText("out_spesa",a1); setText("out_div",a2); setText("out_extra",a3);
+    setText("out_residuo", residuo<0?residuo:0);
+    document.getElementById("out_residuo").className = residuo<0 ? "bad" : "ok";
+    document.getElementById("warn_deficit").style.display = residuo<0 ? "block" : "none";
+  }else{
+    updateEuro(residuo);
   }
-  saveState();
 }
 
-/* ------- eventi ------- */
-document.getElementById('calc').addEventListener('click', updateAll);
-document.querySelectorAll('input,select').forEach(el=>{
-  el.addEventListener('change', updateAll);
-  el.addEventListener('input',  (e)=>{
-    // aggiorna barre in tempo reale in modalità euro
-    if(e.target.id.startsWith('e_')) updateAll();
-  });
-});
-document.querySelectorAll('input[name="mode"]').forEach(r=>{
-  r.addEventListener('change', ()=>{ toggleMode(); updateAll(); });
-});
-document.getElementById('resetDefault').addEventListener('click', ()=>{
-  const mode = document.querySelector('input[name="mode"]:checked').value;
-  if(mode==='percent'){
-    document.getElementById('p_spesa').value=40; document.getElementById('n_spesa').value=40;
-    document.getElementById('p_div').value=40;   document.getElementById('n_div').value=40;
-    document.getElementById('p_extra').value=20; document.getElementById('n_extra').value=20;
-  } else {
-    document.getElementById('e_spesa').value=0;
-    document.getElementById('e_div').value=0;
-    document.getElementById('e_extra').value=0;
+/* ===== reset rapido ===== */
+function resetDefault(){
+  const mode=document.querySelector('input[name="mode"]:checked').value;
+  if(mode==="percent"){
+    document.getElementById("p_spesa").value=40; document.getElementById("n_spesa").value=40;
+    document.getElementById("p_div").value=40;   document.getElementById("n_div").value=40;
+    document.getElementById("p_extra").value=20; document.getElementById("n_extra").value=20;
+  }else{
+    document.getElementById("e_spesa").value=0;
+    document.getElementById("e_div").value=0;
+    document.getElementById("e_extra").value=0;
   }
   updateAll();
-});
+}
 
-/* ------- boot ------- */
-loadState();
-updateAll();
+/* primo calcolo all'apertura */
+window.onload = function(){ toggleMode(); updateAll(); };
 </script>
 </body>
 </html>
